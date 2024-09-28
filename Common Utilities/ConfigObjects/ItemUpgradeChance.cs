@@ -1,20 +1,20 @@
 namespace Common_Utilities.ConfigObjects
 {
-    public class ItemUpgradeChance
+    public class ItemUpgradeChance : IChanceObject
     {
-        public ItemType Original { get; set; }
+        public string Original { get; set; }
 
-        public ItemType New { get; set; }
+        public string New { get; set; }
 
         public double Chance { get; set; }
 
         public int Count { get; set; } = 1;
 
-        public void Deconstruct(out ItemType itemType, out ItemType itemType1, out double i, out int count)
+        public void Deconstruct(out string originalItem, out string destinationItem, out double chance, out int count)
         {
-            itemType = Original;
-            itemType1 = New;
-            i = Chance;
+            originalItem = Original;
+            destinationItem = New;
+            chance = Chance;
             count = Count;
         }
     }

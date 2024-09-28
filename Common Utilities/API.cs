@@ -1,16 +1,13 @@
-namespace Common_Utilities
-{ 
-    using System.Collections.Generic;
+﻿namespace Common_Utilities.API;
 
-    using Exiled.API.Features;
-    using PlayerRoles;
+using System.Collections.Generic;
+using Exiled.API.Features;
+using PlayerRoles;
 
-    public static class API
-    {
-        public static List<ItemType> GetStartItems(RoleTypeId role) => Main.Instance.PlayerHandlers.StartItems(role);
-
-        public static List<ItemType> GetStartItems(RoleTypeId role, Player player) => Main.Instance.PlayerHandlers.StartItems(role, player);
-
-        public static float GetHealthOnKill(RoleTypeId role) => Main.Instance.Config.HealthOnKill?.ContainsKey(role) ?? false ? Main.Instance.Config.HealthOnKill[role] : 0f;
-    }
+public static class API
+{
+    // API methods for potential use by other plugins, not sure if anyone actually uses this
+    public static float GetHealthOnKill(RoleTypeId role) => Plugin.Instance.Config.HealthOnKill?.ContainsKey(role) ?? false ? Plugin.Instance.Config.HealthOnKill[role] : 0f;
+    
+    public static List<ItemType> GetStartItems(RoleTypeId role, Player player = null) => Plugin.Instance.playerHandlers.GetStartingInventory(role, player);
 }
