@@ -128,7 +128,7 @@ namespace Common_Utilities
                     {
                         new()
                         {
-                            AmmoType = ItemType.Ammo556x45,
+                            Type = ItemType.Ammo556x45,
                             Amount = 200,
                             Group = "none",
                         },
