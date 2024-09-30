@@ -101,9 +101,12 @@ public class PlayerHandlers
         
     public void OnPlayerHurting(HurtingEventArgs ev)
     {
-        if (config.RoleDamageMultipliers != null && ev.Attacker != null && config.RoleDamageMultipliers.TryGetValue(ev.Attacker.Role, out var damageMultiplier))
+        if (config.RoleDamageDealtMultipliers != null && ev.Attacker != null && config.RoleDamageDealtMultipliers.TryGetValue(ev.Attacker.Role, out var damageMultiplier))
             ev.Amount *= damageMultiplier;
 
+        if (config.RoleDamageReceivedMultipliers != null && config.RoleDamageReceivedMultipliers.TryGetValue(ev.Player.Role, out damageMultiplier))
+            ev.Amount *= damageMultiplier;
+        
         if (config.DamageMultipliers != null && config.DamageMultipliers.TryGetValue(ev.DamageHandler.Type, out damageMultiplier))
             ev.Amount *= damageMultiplier;
 

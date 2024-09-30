@@ -137,7 +137,7 @@ namespace Common_Utilities
             },
         };
 
-        [Description("The list of custom 914 recipies. OriginalItem is the item being upgraded, NewItem is the item to upgrade to, and Chance is the percent chance of the upgrade happening. You can specify multiple upgrade choices for the same item.")]
+        [Description("The list of custom 914 recipies. OriginalItem is the item being upgraded, NewItem is the item to upgrade to, and Chance is the percent chance of the upgrade happening. You can specify multiple upgrade choices for the same item. For custom items use the item's name.")]
         public Dictionary<Scp914KnobSetting, List<ItemUpgradeChance>> Scp914ItemChances { get; set; } = new()
         {
             {
@@ -153,7 +153,7 @@ namespace Common_Utilities
             },
         };
         
-        [Description("The list of custom 914 recipies for roles. Original is the role to be changed, New is the new role to assign, Chance is the % chance of the upgrade occuring.")]
+        [Description("The list of custom 914 recipies for roles. Original is the role to be changed, New is the new role to assign, Chance is the % chance of the upgrade occuring. For custom roles use the role's name.")]
         public Dictionary<Scp914KnobSetting, List<PlayerUpgradeChance>> Scp914ClassChanges { get; set; } = new()
         {
             {
@@ -228,8 +228,16 @@ namespace Common_Utilities
         [Description("If item cleanup should only happen in the Pocket Dimension or not.")]
         public bool ItemCleanupOnlyPocket { get; set; } = false;
         
-        [Description("A list of all roles and their damage modifiers. The number here is a multiplier, not a raw damage amount. Thus, setting it to 1 = normal damage, 1.5 = 50% more damage, and 0.5 = 50% less damage.")]
-        public Dictionary<RoleTypeId, float> RoleDamageMultipliers { get; set; } = new()
+        [Description("A list of all roles and their damage dealt modifiers. The number here is a multiplier, not a raw damage amount. Thus, setting it to 1 = normal damage, 1.5 = 50% more damage, and 0.5 = 50% less damage.")]
+        public Dictionary<RoleTypeId, float> RoleDamageDealtMultipliers { get; set; } = new()
+        {
+            {
+                RoleTypeId.Scp173, 1.0f
+            },
+        };
+
+        [Description("List of roles and their damage received multipliers. 1 = normal damage, 1.5 = 50% more damage, 0.5 = 50% less damage.")]
+        public Dictionary<RoleTypeId, float> RoleDamageReceivedMultipliers { get; set; } = new()
         {
             {
                 RoleTypeId.Scp173, 1.0f
