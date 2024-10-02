@@ -66,14 +66,14 @@ public class PlayerHandlers
 
     public void OnSpawned(SpawnedEventArgs ev)
     {
-        if (ev.Player == null)
+        if (ev.Player is null)
         {
             Log.Warn($"{nameof(OnSpawned)}: Triggering player is null.");
             return;
         }
 
         RoleTypeId newRole = ev.Player.Role.Type;
-        if (config.HealthValues != null && config.HealthValues.TryGetValue(newRole, out int health))
+        if (config.HealthValues is not null && config.HealthValues.TryGetValue(newRole, out int health))
         {
             ev.Player.MaxHealth = health;
             ev.Player.Health = health;
@@ -84,7 +84,7 @@ public class PlayerHandlers
             ev.Player.CustomInfo = $"({ev.Player.Health}/{ev.Player.MaxHealth}) {(!string.IsNullOrEmpty(ev.Player.CustomInfo) ? ev.Player.CustomInfo.Substring(ev.Player.CustomInfo.LastIndexOf(')') + 1) : string.Empty)}";
         }
 
-        if (config.AfkIgnoredRoles.Contains(newRole) && Plugin.AfkDict.TryGetValue(ev.Player, out Tuple<int, Vector3> value))
+        if (config.AfkIgnoredRoles is not null && config.AfkIgnoredRoles.Contains(newRole) && Plugin.AfkDict.TryGetValue(ev.Player, out Tuple<int, Vector3> value))
         {
             Plugin.AfkDict[ev.Player] =
                 new Tuple<int, Vector3>(newRole is RoleTypeId.Spectator ? value.Item1 : 0, ev.Player.Position);
@@ -93,7 +93,7 @@ public class PlayerHandlers
 
     public void OnPlayerDied(DiedEventArgs ev)
     {
-        if (ev.Attacker != null && config.HealthOnKill.ContainsKey(ev.Attacker.Role))
+        if (ev.Attacker is not null && config.HealthOnKill is not null && config.HealthOnKill.ContainsKey(ev.Attacker.Role))
         {
             ev.Attacker.Heal(config.HealthOnKill[ev.Attacker.Role]);
         }
@@ -101,13 +101,13 @@ public class PlayerHandlers
         
     public void OnPlayerHurting(HurtingEventArgs ev)
     {
-        if (config.RoleDamageDealtMultipliers != null && ev.Attacker != null && config.RoleDamageDealtMultipliers.TryGetValue(ev.Attacker.Role, out var damageMultiplier))
+        if (config.RoleDamageDealtMultipliers is not null && ev.Attacker is not null && config.RoleDamageDealtMultipliers.TryGetValue(ev.Attacker.Role, out var damageMultiplier))
             ev.Amount *= damageMultiplier;
 
-        if (config.RoleDamageReceivedMultipliers != null && config.RoleDamageReceivedMultipliers.TryGetValue(ev.Player.Role, out damageMultiplier))
+        if (config.RoleDamageReceivedMultipliers is not null && config.RoleDamageReceivedMultipliers.TryGetValue(ev.Player.Role, out damageMultiplier))
             ev.Amount *= damageMultiplier;
         
-        if (config.DamageMultipliers != null && config.DamageMultipliers.TryGetValue(ev.DamageHandler.Type, out damageMultiplier))
+        if (config.DamageMultipliers is not null && config.DamageMultipliers.TryGetValue(ev.DamageHandler.Type, out damageMultiplier))
             ev.Amount *= damageMultiplier;
 
         if (config.PlayerHealthInfo)
