@@ -159,13 +159,11 @@ namespace Common_Utilities
             {
                 Scp914KnobSetting.Rough, new List<PlayerUpgradeChance>
                 {
+                    new()
                     {
-                        new()
-                        {
-                            Original = RoleTypeId.ClassD.ToString(),
-                            New = RoleTypeId.Spectator.ToString(),
-                            Chance = 100,
-                        }
+                        Original = RoleTypeId.ClassD.ToString(),
+                        New = RoleTypeId.Spectator.ToString(),
+                        Chance = 100,
                     },
                 }
             },
@@ -180,6 +178,7 @@ namespace Common_Utilities
                     new()
                     {
                         Room = RoomType.LczClassDSpawn,
+                        Offset = Vector3.up,
                         Chance = 50,
                     },
                     new()

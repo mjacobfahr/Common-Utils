@@ -1,3 +1,4 @@
+// ReSharper disable All
 namespace Common_Utilities.EventHandlers;
 
 using Exiled.CustomItems.API.Features;
@@ -109,17 +110,20 @@ public class MapHandlers
     {
         if (config.Scp914ClassChanges != null && config.Scp914ClassChanges.TryGetValue(ev.KnobSetting, out var outPlayerUpgradeChances))
         {
+            Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(config.Scp914ClassChanges)} found valid config entries, filtering....");
             List<PlayerUpgradeChance> playerUpgradeChances = outPlayerUpgradeChances
                 .Where(x => 
-                    x.Original == ev.Player.Role.ToString() 
+                    x.Original == ev.Player.Role.Type.ToString()
                     || (CustomRole.TryGet(ev.Player, out IReadOnlyCollection<CustomRole> customRoles) && customRoles.Select(r => r.Name).Contains(x.Original)))
                 .ToList();
-
+            
+            Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(config.Scp914ClassChanges)} filtered entries. Found {playerUpgradeChances.Count} matches.");
+            
             double rolledChance = Utils.RollChance(playerUpgradeChances);
-
+            
             foreach ((string sourceRole, string destinationRole, double chance, bool keepInventory, bool keepHealth) in playerUpgradeChances)
             {
-                Log.Debug($"{nameof(OnUpgradingPlayer)}: {ev.Player.Nickname} ({ev.Player.Role}) is trying to upgrade his class. {sourceRole} -> {destinationRole} ({chance}). Should be processed: {rolledChance <= chance} ({rolledChance})");
+                Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(config.Scp914ClassChanges)} {ev.Player.Nickname} ({ev.Player.Role}) is trying to upgrade his class. sourceRole: {sourceRole}; destinationRole: {destinationRole}; chance: {chance}; rolledChance: {rolledChance}; keepInventory: {keepHealth}; keepHealth: {keepHealth};");
                 if (rolledChance <= chance)
                 {
                     float originalHealth = ev.Player.Health;
@@ -139,6 +143,11 @@ public class MapHandlers
                         }
                     }
 
+                    if (ev.Player.Role.IsDead)
+                    {
+                        return;
+                    }
+                    
                     if (keepHealth)
                     {
                         ev.Player.Health = originalHealth;
@@ -168,13 +177,15 @@ public class MapHandlers
 
         if (config.Scp914EffectChances != null && config.Scp914EffectChances.ContainsKey(ev.KnobSetting) && (ev.Player.Role.Side != Side.Scp || !config.ScpsImmuneTo914Effects))
         {
+            Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(config.Scp914EffectChances)} found valid config entries.");
+
             IEnumerable<Scp914EffectChance> scp914EffectChances = config.Scp914EffectChances[ev.KnobSetting];
             
             double rolledChance = Utils.RollChance(scp914EffectChances);
 
             foreach ((EffectType effect, double chance, float duration) in scp914EffectChances)
             {
-                Log.Debug($"{nameof(OnUpgradingPlayer)}: {ev.Player.Nickname} is trying to gain an effect through SCP-914. {effect} ({chance}). Should be added: {rolledChance <= chance} ({rolledChance})");
+                Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(config.Scp914EffectChances)} {ev.Player.Nickname} is trying to gain an effect through SCP-914. effect: {effect}; chance: {chance}; rolledChance: {rolledChance};");
                 
                 if (rolledChance <= chance)
                 {
@@ -190,13 +201,15 @@ public class MapHandlers
 
         if (config.Scp914TeleportChances != null && config.Scp914TeleportChances.ContainsKey(ev.KnobSetting))
         {
+            Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(config.Scp914TeleportChances)} found valid config entries.");
+
             IEnumerable<Scp914TeleportChance> scp914TeleportChances = config.Scp914TeleportChances[ev.KnobSetting];
 
             double rolledChance = Utils.RollChance(scp914TeleportChances);
 
             foreach ((RoomType roomType, List<RoomType> ignoredRooms, Vector3 offset, double chance, float damage, ZoneType zone) in config.Scp914TeleportChances[ev.KnobSetting])
             {
-                Log.Debug($"{nameof(OnUpgradingPlayer)}: {ev.Player.Nickname} is trying to be teleported by 914. {roomType} + {offset} ({chance}). Should be teleported: {rolledChance <= chance} ({rolledChance})");
+                Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(config.Scp914TeleportChances)} {ev.Player.Nickname} is trying to be teleported by 914. zone: {zone}; room: {roomType}; offset: {offset}; chance: {chance}; rolledChance: {rolledChance};");
 
                 if (rolledChance <= chance)
                 {
