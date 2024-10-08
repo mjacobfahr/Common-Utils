@@ -1,3 +1,5 @@
+using System.Collections.Specialized;
+
 namespace Common_Utilities.EventHandlers;
 
 #pragma warning disable IDE0018
@@ -36,6 +38,7 @@ public class PlayerHandlers
         }
         
         // no clue why this works while in ChangingRole instead of spawned but if it ain't broke don't fix it
+        // answering my previous question, (obviously) it works because we're setting ev.Items which are yet to be given to the player
         if (config.StartingInventories.ContainsKey(ev.NewRole) && !ev.ShouldPreserveInventory)
         {
             if (ev.Items == null)
@@ -147,10 +150,13 @@ public class PlayerHandlers
     {
         List<ItemType> items = new();
         
+        Log.Debug($"{nameof(GetStartingInventory)} Iterating through slots...");
         // iterate through slots
         for (int i = 0; i < config.StartingInventories[role].UsedSlots; i++)
         {
-#pragma warning disable SA1119
+            Log.Debug($"\n{nameof(GetStartingInventory)} Iterating slot {i + 1}");
+            Log.Debug($"{nameof(GetStartingInventory)} Checking groups...");
+            
             // item chances for that slot
             List<ItemChance> itemChances = config.StartingInventories[role][i]
                 .Where(x => 
@@ -159,15 +165,14 @@ public class PlayerHandlers
                     || x.Group == "none" 
                     || (ServerStatic.PermissionsHandler._groups.TryGetValue(x.Group, out var group) && group == player.Group))
                 .ToList();
-#pragma warning restore SA1119
 
-            double rolledChance = Utils.RollChance(itemChances);
+            Log.Debug($"{nameof(GetStartingInventory)} Finished checking groups, found {itemChances.Count} valid itemChances.");
             
-            Log.Debug($"[StartItems] RolledChance ({rolledChance})/{itemChances.Sum(val => val.Chance)}");
+            double rolledChance = Utils.RollChance(itemChances);
             
             foreach ((string item, double chance) in itemChances)
             {
-                Log.Debug($"[StartItems] Probability ({rolledChance})/{chance}");
+                Log.Debug($"{nameof(GetStartingInventory)} Trying to assign to slot {i + 1} for {role}; item: {item}; {rolledChance} <= {chance} ({rolledChance <= chance}).");
                
                 if (rolledChance <= chance)
                 {
@@ -182,18 +187,20 @@ public class PlayerHandlers
                         if (player != null)
                             customItem!.Give(player);
                         else
-                            Log.Warn($"{nameof(GetStartingInventory)}: Tried to give {customItem!.Name} to a null player.");
+                            Log.Warn($"{nameof(GetStartingInventory)} Tried to give {customItem!.Name} to a null player.");
                             
                         break;
                     }
 
-                    Log.Warn($"{nameof(GetStartingInventory)}: {item} is not a valid ItemType or CustomItem! It is being skipped in inventory decisions.");
+                    Log.Warn($"{nameof(GetStartingInventory)} Skipping {item} as it is not a valid ItemType or CustomItem!");
                 }
 
                 if (config.AdditiveProbabilities) 
                     rolledChance -= chance;
             }
         }
+        
+        Log.Debug($"{nameof(GetStartingInventory)} Finished iterating slots.");
 
         return items;
     }

@@ -138,6 +138,7 @@ namespace Common_Utilities
         };
 
         [Description("The list of custom 914 recipies. Original is the item being upgraded, New is the item to upgrade to, and Chance is the percent chance of the upgrade happening. You can specify multiple upgrade choices for the same item. For custom items use the item's name.")]
+        // This should be named Scp914ItemChanGes instead of ChanCes (capitalized to show the difference), consider changing at some point (breaking change)
         public Dictionary<Scp914KnobSetting, List<ItemUpgradeChance>> Scp914ItemChances { get; set; } = new()
         {
             {

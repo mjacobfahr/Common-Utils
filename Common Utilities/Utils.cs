@@ -6,15 +6,15 @@ using ConfigObjects;
 
 public static class Utils
 {
-    public static double RollChance(IEnumerable<IChanceObject> scp914EffectChances)
+    public static int RollChance(IEnumerable<IChanceObject> scp914EffectChances)
     {
-        double rolledChance;
+        double rolledChance = Plugin.Random.NextDouble();
         
         if (Plugin.Instance.Config.AdditiveProbabilities)
-            rolledChance = Plugin.Random.NextDouble() * scp914EffectChances.Sum(x => x.Chance);
+            rolledChance *= scp914EffectChances.Sum(x => x.Chance);
         else
-            rolledChance = Plugin.Random.NextDouble() * 100;
+            rolledChance *= 100;
         
-        return rolledChance;
+        return (int)rolledChance;
     }
 }
