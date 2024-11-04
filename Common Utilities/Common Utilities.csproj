@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="EXILED-OFFICIAL" Version="8.12.2" />
+        <PackageReference Include="ExMod.Exiled" Version="8.13.1" />
         <PackageReference Include="StyleCop.Analyzers" Version="$(StyleCopVersion)" IncludeAssets="All" PrivateAssets="All" />
     </ItemGroup>
 
