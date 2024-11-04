@@ -41,7 +41,7 @@ public class Plugin : Plugin<Config>
 
     public override string Author { get; } = "ExMod-Team";
 
-    public override Version Version { get; } = new(7, 2, 2);
+    public override Version Version { get; } = new(7, 2, 3);
 
     public override Version RequiredExiledVersion { get; } = new(8, 11, 0);
 
