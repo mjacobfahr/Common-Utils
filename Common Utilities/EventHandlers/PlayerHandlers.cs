@@ -125,7 +125,7 @@ public class PlayerHandlers
 
     public void OnEscaping(EscapingEventArgs ev)
     {
-        if (ev.Player.IsCuffed && config.DisarmedEscapeSwitchRole.TryGetValue(ev.Player.Role, out RoleTypeId newRole))
+        if (ev.Player.IsCuffed && config.DisarmedEscapeSwitchRole is not null && config.DisarmedEscapeSwitchRole.TryGetValue(ev.Player.Role, out RoleTypeId newRole))
         {
             ev.NewRole = newRole;
             ev.IsAllowed = newRole != RoleTypeId.None;
