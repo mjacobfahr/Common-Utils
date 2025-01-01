@@ -23,6 +23,9 @@ public class PlayerHandlers
     
     public void OnPlayerVerified(VerifiedEventArgs ev)
     {
+        if (ev.Player is null)
+            return;
+        
         string message = FormatJoinMessage(ev.Player);
         
         if (!string.IsNullOrEmpty(message))
