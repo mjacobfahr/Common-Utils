@@ -46,14 +46,14 @@ public class MapHandlers
                     {
                         if (itemType is not ItemType.None)
                         {
-                            UpgradePickup(ev.Pickup, ev.OutputPosition, count, false, itemType: itemType);
+                            UpgradePickup(ev.Pickup, ev.OutputPosition + Vector3.up, count, false, itemType: itemType);
                         }
                     }
                     else if (CustomItem.TryGet(destinationItem, out CustomItem customItem))
                     {
                         if (customItem is not null)
                         {
-                            UpgradePickup(ev.Pickup, ev.OutputPosition, count, true, customItem: customItem);
+                            UpgradePickup(ev.Pickup, ev.OutputPosition + Vector3.up, count, true, customItem: customItem);
                         }
                     }
                     
