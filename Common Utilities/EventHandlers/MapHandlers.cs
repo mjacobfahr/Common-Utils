@@ -116,9 +116,10 @@ public class MapHandlers
 
     public void OnUpgradingPlayer(UpgradingPlayerEventArgs ev)
     {
-        if (config.Scp914ClassChanges != null && config.Scp914ClassChanges.TryGetValue(ev.KnobSetting, out var outPlayerUpgradeChances))
+        if (config.Scp914ClassChanges != null && config.Scp914ClassChanges.TryGetValue(ev.KnobSetting, out List<PlayerUpgradeChance> outPlayerUpgradeChances))
         {
             Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(config.Scp914ClassChanges)}: Found valid config entries, filtering...");
+
             List<PlayerUpgradeChance> playerUpgradeChances = outPlayerUpgradeChances
                 .Where(x => 
                     x.Original == ev.Player.Role.Type.ToString()
@@ -183,11 +184,9 @@ public class MapHandlers
             }
         }
 
-        if (config.Scp914EffectChances != null && config.Scp914EffectChances.ContainsKey(ev.KnobSetting) && (ev.Player.Role.Side != Side.Scp || !config.ScpsImmuneTo914Effects))
+        if (config.Scp914EffectChances != null && (ev.Player.Role.Side != Side.Scp || !config.ScpsImmuneTo914Effects) && config.Scp914EffectChances.TryGetValue(ev.KnobSetting, out List<Scp914EffectChance> scp914EffectChances))
         {
             Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(config.Scp914EffectChances)}: Found valid config entries.");
-
-            IEnumerable<Scp914EffectChance> scp914EffectChances = config.Scp914EffectChances[ev.KnobSetting];
             
             double rolledChance = Utils.RollChance(scp914EffectChances);
 
@@ -202,20 +201,18 @@ public class MapHandlers
                         break;
                 }
 
-                if (config.AdditiveProbabilities) 
+                if (config.AdditiveProbabilities)
                     rolledChance -= chance;
             }
         }
 
-        if (config.Scp914TeleportChances != null && config.Scp914TeleportChances.ContainsKey(ev.KnobSetting))
+        if (config.Scp914TeleportChances != null && config.Scp914TeleportChances.TryGetValue(ev.KnobSetting, out List<Scp914TeleportChance> scp914TeleportChances))
         {
             Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(config.Scp914TeleportChances)}: Found valid config entries.");
 
-            IEnumerable<Scp914TeleportChance> scp914TeleportChances = config.Scp914TeleportChances[ev.KnobSetting];
-
             double rolledChance = Utils.RollChance(scp914TeleportChances);
 
-            foreach ((RoomType roomType, List<RoomType> ignoredRooms, Vector3 offset, double chance, float damage, ZoneType zone) in config.Scp914TeleportChances[ev.KnobSetting])
+            foreach ((RoomType roomType, List<RoomType> ignoredRooms, Vector3 offset, double chance, float damage, ZoneType zone) in scp914TeleportChances)
             {
                 Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(config.Scp914TeleportChances)}: {ev.Player.Nickname} is trying to be teleported by 914. {roomType} + {offset}; {zone} + {ignoredRooms?.Count} ignored rooms; damage: {damage}; {rolledChance} <= {chance} ({rolledChance <= chance})");
 
@@ -236,13 +233,20 @@ public class MapHandlers
 
     private Vector3 ChoosePosition(ZoneType zone, List<RoomType> ignoredRooms, Vector3 offset, RoomType roomType)
     {
-        Room room1 = Room.List.Where(x => x.Zone == zone && !ignoredRooms.Contains(x.Type)).GetRandomValue();
-        Vector3 pos1 = (room1?.Position ?? Vector3.zero) + (Vector3.up * 1.5f);
+        // without this offset, players will always fall through the floor on teleport
+        Vector3 floorOffset = Vector3.up * 1.5f;
 
-        Room room2 = Room.Get(roomType);
-        Vector3 pos2 = room2?.Position ?? Vector3.zero + (Vector3.up * 1.5f) + offset;
-       
-        return zone != ZoneType.Unspecified ? pos1 : pos2;
+        Room room;
+        if (zone == ZoneType.Unspecified)
+        {
+            room = Room.Get(roomType);
+        }
+        else
+        {
+            room = Room.List.Where(x => x.Zone == zone && !ignoredRooms.Contains(x.Type)).GetRandomValue();
+        }
+
+        return (room?.Position ?? Vector3.zero) + floorOffset + (zone == ZoneType.Unspecified ? offset : Vector3.zero);
     }
 
     private void DealDamage(Player player, float damage)
@@ -251,10 +255,11 @@ public class MapHandlers
         {
             float amount = player.MaxHealth * damage;
             if (damage > 1f)
+            {
                 amount = damage;
+            }
 
-            Log.Debug(
-                $"{nameof(OnUpgradingPlayer)}: {player.Nickname} is being damaged for {amount}. -- {player.Health} * {damage}");
+            Log.Debug($"{nameof(OnUpgradingPlayer)}: {player.Nickname} is being damaged for {amount}. -- {player.Health} * {damage}");
             player.Hurt(amount, "SCP-914 Teleport", "SCP-914");
         }
     }
@@ -287,19 +292,27 @@ public class MapHandlers
             for (int i = 0; i < count; i++)
             {
                 if (!ev.Player.IsInventoryFull)
+                {
                     ev.Player.AddItem(itemType);
+                }
                 else
+                {
                     Pickup.CreateAndSpawn(itemType, Scp914.OutputPosition, ev.Player.Rotation, ev.Player);
-            }   
+                }
+            }
         }
         else
         {
             for (int i = 0; i < count; i++)
             {
                 if (!ev.Player.IsInventoryFull)
+                {
                     customItem!.Give(ev.Player);
+                }
                 else
+                {
                     customItem!.Spawn(Scp914.OutputPosition, ev.Player);
+                }
             }
         }
     }
