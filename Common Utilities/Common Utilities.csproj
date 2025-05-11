@@ -22,13 +22,25 @@
         </AssemblyAttribute>
     </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="ExMod.Exiled" Version="9.1.1" />
-        <PackageReference Include="StyleCop.Analyzers" Version="$(StyleCopVersion)" IncludeAssets="All" PrivateAssets="All" />
-    </ItemGroup>
+	<!-- This replaces the Exiled NuGet package until the new beta version is fully released -->
+	<ItemGroup>
+		<Reference Include="Exiled.API" HintPath="$(EXILED_PLUGINS)\Exiled.API.dll" Private="false" />
+		<Reference Include="Exiled.CustomItems" HintPath="$(EXILED_PLUGINS)\Exiled.CustomItems.dll" Private="false" />
+		<Reference Include="Exiled.CustomRoles" HintPath="$(EXILED_PLUGINS)\Exiled.CustomRoles.dll" Private="false" />
+		<Reference Include="Exiled.Events" HintPath="$(EXILED_PLUGINS)\Exiled.Events.dll" Private="false" />
+		<Reference Include="Exiled.Loader" HintPath="$(EXILED_PLUGINS)\Exiled.Loader.dll" Private="false" />
+		<Reference Include="Exiled.Permissions" HintPath="$(EXILED_PLUGINS)\Exiled.Permissions.dll" Private="false" />
+	</ItemGroup>
 
     <ItemGroup>
-        <Reference Include="Assembly-CSharp-firstpass" HintPath="$(EXILED_REFERENCES)\Assembly-CSharp-firstpass.dll" Private="false" />
+        <!--<PackageReference Include="ExMod.Exiled" Version="9.6.0" />-->
+		<PackageReference Include="Lib.Harmony" Version="$(HarmonyVersion)" />
+        <PackageReference Include="StyleCop.Analyzers" Version="$(StyleCopVersion)" IncludeAssets="All" PrivateAssets="All" />
+    </ItemGroup>
+	
+    <ItemGroup>
+		<Reference Include="Assembly-CSharp" HintPath="$(EXILED_REFERENCES)\Assembly-CSharp-Publicized.dll" Private="false" />
+		<Reference Include="Assembly-CSharp-firstpass" HintPath="$(EXILED_REFERENCES)\Assembly-CSharp-firstpass.dll" Private="false" />	
         <Reference Include="Mirror" HintPath="$(EXILED_REFERENCES)\Mirror.dll" Private="false" />
         <Reference Include="UnityEngine" HintPath="$(EXILED_REFERENCES)\UnityEngine.dll" Private="false" />
         <Reference Include="UnityEngine.CoreModule" HintPath="$(EXILED_REFERENCES)\UnityEngine.CoreModule.dll" Private="false" />

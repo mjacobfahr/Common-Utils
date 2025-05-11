@@ -56,12 +56,12 @@ public class PlayerHandlers
             if (config.StartingInventories[ev.NewRole].Ammo == null || config.StartingInventories[ev.NewRole].Ammo.Count <= 0) 
                 return;
             
-            if (config.StartingInventories[ev.NewRole].Ammo.Any(s => string.IsNullOrEmpty(s.Group) || s.Group == "none" || (ServerStatic.PermissionsHandler._groups.TryGetValue(s.Group, out UserGroup userGroup) && userGroup == ev.Player.Group)))
+            if (config.StartingInventories[ev.NewRole].Ammo.Any(s => string.IsNullOrEmpty(s.Group) || s.Group == "none" || (ServerStatic.PermissionsHandler.Groups.TryGetValue(s.Group, out UserGroup userGroup) && userGroup == ev.Player.Group)))
             {
                 ev.Ammo.Clear();
                 foreach ((ItemType type, ushort amount, string group) in config.StartingInventories[ev.NewRole].Ammo)
                 {
-                    if (string.IsNullOrEmpty(group) || group == "none" || (ServerStatic.PermissionsHandler._groups.TryGetValue(group, out UserGroup userGroup) && userGroup == ev.Player.Group))
+                    if (string.IsNullOrEmpty(group) || group == "none" || (ServerStatic.PermissionsHandler.Groups.TryGetValue(group, out UserGroup userGroup) && userGroup == ev.Player.Group))
                     {
                         ev.Ammo.Add(type, amount);
                     }
@@ -166,7 +166,7 @@ public class PlayerHandlers
                     player == null 
                     || string.IsNullOrEmpty(x.Group) 
                     || x.Group == "none" 
-                    || (ServerStatic.PermissionsHandler._groups.TryGetValue(x.Group, out var group) && group == player.Group))
+                    || (ServerStatic.PermissionsHandler.Groups.TryGetValue(x.Group, out var group) && group == player.Group))
                 .ToList();
 
             Log.Debug($"{nameof(GetStartingInventory)} Finished checking groups, found {itemChances.Count} valid itemChances.");
