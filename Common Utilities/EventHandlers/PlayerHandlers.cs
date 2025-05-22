@@ -1,7 +1,3 @@
-using System.Collections.Specialized;
-using Exiled.Permissions;
-using Exiled.Permissions.Features;
-
 namespace Common_Utilities.EventHandlers;
 
 #pragma warning disable IDE0018
@@ -14,8 +10,6 @@ using Exiled.API.Features.Roles;
 using Exiled.CustomItems.API.Features;
 using Exiled.Events.EventArgs.Interfaces;
 using Exiled.Events.EventArgs.Player;
-using LabApi.Features.Permissions;
-using LabApi.Features.Permissions.Providers;
 using PlayerRoles;
 using UnityEngine;
 
