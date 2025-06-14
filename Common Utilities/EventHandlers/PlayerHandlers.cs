@@ -54,12 +54,12 @@ public class PlayerHandlers
             if (config.StartingInventories[ev.NewRole].Ammo == null || config.StartingInventories[ev.NewRole].Ammo.Count <= 0) 
                 return;
             
-            if (config.StartingInventories[ev.NewRole].Ammo.Any(s => string.IsNullOrEmpty(s.Group) || s.Group == "none" || userGroup == ev.Player.Group.Name)
+            if (config.StartingInventories[ev.NewRole].Ammo.Any(s => string.IsNullOrEmpty(s.Group) || s.Group == "none" || s.Group == ev.Player.Group.Name))
             {
                 ev.Ammo.Clear();
                 foreach ((ItemType type, ushort amount, string group) in config.StartingInventories[ev.NewRole].Ammo)
                 {
-                    if (string.IsNullOrEmpty(group) || group == "none" || userGroup == ev.Player.Group.Name))
+                    if (string.IsNullOrEmpty(group) || group == "none" || group == ev.Player.Group.Name)
                     {
                         ev.Ammo.Add(type, amount);
                     }
