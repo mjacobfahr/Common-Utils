@@ -1,18 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <OutputType>Library</OutputType>
-        <AssemblyName>$(ProjectName)</AssemblyName>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-        <Version>7.1.0</Version>
-        <LangVersion>default</LangVersion>
-        <AssemblyVersion>7.0.6</AssemblyVersion>
-        <FileVersion>7.0.6</FileVersion>
-        <Nullable>disable</Nullable>
-        <RunPostBuildEvent>Always</RunPostBuildEvent>
-        <Authors>Exmod-Team</Authors>
-    </PropertyGroup>
+		<Authors>DeadServer Team</Authors>
+		<OutputType>Library</OutputType>
+		<AssemblyName>$(ProjectName)</AssemblyName>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+		<Version>7.1.0</Version>
+		<LangVersion>default</LangVersion>
+		<AssemblyVersion>7.0.6</AssemblyVersion>
+		<FileVersion>7.0.6</FileVersion>
+		<Nullable>disable</Nullable>
+		<RunPostBuildEvent>Always</RunPostBuildEvent>
+	</PropertyGroup>
 
     <Import Project="../Plugin.props" />
 

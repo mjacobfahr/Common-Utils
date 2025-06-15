@@ -1,61 +1,61 @@
-// ReSharper disable IteratorNeverReturns
-namespace Common_Utilities.EventHandlers;
-
-#pragma warning disable SA1313 // Parameter names should begin with lower-case letter
-
-using System;
-using System.Collections.Generic;
-    
 using Exiled.API.Features;
 using Exiled.API.Features.Pickups;
 using Exiled.API.Features.Roles;
 using Exiled.Events.EventArgs.Server;
 using Exiled.Events.EventArgs.Warhead;
 using MEC;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
+
+namespace Common_Utilities.EventHandlers;
 
 public class ServerHandlers
 {
-    private Config config => Plugin.Instance.Config;
-        
+    private Config Configs => Plugin.Singleton.Config;
+
     private bool friendlyFireDisable;
 
     public void OnRoundStarted()
     {
-        if (config.AutonukeTime > -1)
-            Plugin.Coroutines.Add(Timing.CallDelayed(config.AutonukeTime, AutoNuke));
-
-        if (config.RagdollCleanupDelay > 0)
+        if (Configs.AutonukeTime > -1)
+        {
+            Plugin.Coroutines.Add(Timing.CallDelayed(Configs.AutonukeTime, AutoNuke));
+        }
+        if (Configs.RagdollCleanupDelay > 0)
+        {
             Plugin.Coroutines.Add(Timing.RunCoroutine(RagdollCleanup()));
-
-        if (config.ItemCleanupDelay > 0)
+        }
+        if (Configs.ItemCleanupDelay > 0)
+        {
             Plugin.Coroutines.Add(Timing.RunCoroutine(ItemCleanup()));
+        }
     }
 
     public void OnWaitingForPlayers()
     {
-        if (config.AfkLimit > 0)
+        if (Configs.AfkLimit > 0)
         {
             Plugin.AfkDict.Clear();
             Plugin.Coroutines.Add(Timing.RunCoroutine(AfkCheck()));
         }
-
         if (friendlyFireDisable)
         {
             Log.Debug($"{nameof(OnWaitingForPlayers)}: Disabling friendly fire.");
             Server.FriendlyFire = false;
             friendlyFireDisable = false;
         }
-
-        if (config.TimedBroadcastDelay > 0)
+        if (Configs.TimedBroadcastDelay > 0)
+        {
             Plugin.Coroutines.Add(Timing.RunCoroutine(ServerBroadcast()));
+        }
 
         Warhead.IsLocked = false;
     }
-        
+
     public void OnRoundEnded(RoundEndedEventArgs ev)
     {
-        if (config.FriendlyFireOnRoundEnd && !Server.FriendlyFire)
+        if (Configs.FriendlyFireOnRoundEnd && !Server.FriendlyFire)
         {
             Log.Debug($"{nameof(OnRoundEnded)}: Enabling friendly fire.");
             Server.FriendlyFire = true;
@@ -63,42 +63,53 @@ public class ServerHandlers
         }
 
         Timing.KillCoroutines(Plugin.Coroutines.ToArray());
-            
+
         Plugin.Coroutines.Clear();
     }
 
     public void OnRestartingRound()
     {
         foreach (CoroutineHandle coroutine in Plugin.Coroutines)
+        {
             Timing.KillCoroutines(coroutine);
+        }
+
         Plugin.Coroutines.Clear();
     }
 
     public void OnWarheadStarting(StartingEventArgs _)
     {
-        if (!config.ChangeWarheadColor)
+        if (!Configs.ChangeWarheadColor)
+        {
             return;
-            
+        }
+
         foreach (Room room in Room.List)
-            room.Color = config.WarheadColor;
+        {
+            room.Color = Configs.WarheadColor;
+        }
     }
 
     public void OnWarheadStopping(StoppingEventArgs _)
     {
-        if (!config.ChangeWarheadColor || Warhead.IsLocked)
+        if (!Configs.ChangeWarheadColor || Warhead.IsLocked)
+        {
             return;
-            
+        }
+
         foreach (Room room in Room.List)
+        {
             room.ResetColor();
+        }
     }
-        
+
     private IEnumerator<float> ServerBroadcast()
     {
         while(true)
         {
-            yield return Timing.WaitForSeconds(config.TimedBroadcastDelay);
+            yield return Timing.WaitForSeconds(Configs.TimedBroadcastDelay);
 
-            Map.Broadcast(config.TimedBroadcastDuration, config.TimedBroadcast);
+            Map.Broadcast(Configs.TimedBroadcastDuration, Configs.TimedBroadcast);
         }
     }
 
@@ -106,12 +117,14 @@ public class ServerHandlers
     {
         while(true)
         {
-            yield return Timing.WaitForSeconds(config.ItemCleanupDelay);
+            yield return Timing.WaitForSeconds(Configs.ItemCleanupDelay);
 
             foreach (Pickup pickup in Pickup.List)
             {
-                if (!config.ItemCleanupOnlyPocket || pickup.Position.y < -1500f)
+                if (!Configs.ItemCleanupOnlyPocket || pickup.Position.y < -1500f)
+                {
                     pickup.Destroy();
+                }
             }
         }
     }
@@ -120,12 +133,14 @@ public class ServerHandlers
     {
         while(true)
         {
-            yield return Timing.WaitForSeconds(config.RagdollCleanupDelay);
+            yield return Timing.WaitForSeconds(Configs.RagdollCleanupDelay);
 
             foreach (Ragdoll ragdoll in Ragdoll.List)
             {
-                if (!config.RagdollCleanupOnlyPocket || ragdoll.Position.y < -1500f)
+                if (!Configs.RagdollCleanupOnlyPocket || ragdoll.Position.y < -1500f)
+                {
                     ragdoll.Destroy();
+                }
             }
         }
     }
@@ -134,23 +149,25 @@ public class ServerHandlers
     {
         if (!Warhead.IsInProgress)
         {
-            switch (config.AutonukeBroadcast.Duration)
+            switch (Configs.AutonukeBroadcast.Duration)
             {
                 case 0:
                     break;
                 case 1:
-                    Cassie.Message(config.AutonukeBroadcast.Content);
+                    Cassie.Message(Configs.AutonukeBroadcast.Content);
                     break;
                 default:
-                    Map.Broadcast(config.AutonukeBroadcast);
+                    Map.Broadcast(Configs.AutonukeBroadcast);
                     break;
             }
 
             Warhead.Start();
         }
 
-        if (config.AutonukeLock)
+        if (Configs.AutonukeLock)
+        {
             Warhead.IsLocked = true;
+        }
     }
 
     private IEnumerator<float> AfkCheck()
@@ -162,19 +179,19 @@ public class ServerHandlers
             foreach (Player player in Player.List)
             {
                 if (!Plugin.AfkDict.ContainsKey(player))
-                    Plugin.AfkDict.Add(player, new Tuple<int, Vector3>(0, player.Position));
-
-                if (player.Role.IsDead 
-                    || player.IsGodModeEnabled 
-                    || player.IsNoclipPermitted 
-                    || player.Role is FpcRole { IsGrounded: false } 
-                    || player.RemoteAdminPermissions.HasFlag(PlayerPermissions.AFKImmunity) 
-                    || config.AfkIgnoredRoles.Contains(player.Role.Type))
                 {
-#pragma warning disable SA1013
+                    Plugin.AfkDict.Add(player, new Tuple<int, Vector3>(0, player.Position));
+                }
+
+                if (player.Role.IsDead
+                    || player.IsGodModeEnabled
+                    || player.IsNoclipPermitted
+                    || player.Role is FpcRole { IsGrounded: false }
+                    || player.RemoteAdminPermissions.HasFlag(PlayerPermissions.AFKImmunity)
+                    || Configs.AfkIgnoredRoles.Contains(player.Role.Type))
+                {
                     Log.Debug($"Player {player.Nickname} ({player.Role.Type}) is not a checkable player. NoClip: {player.IsNoclipPermitted} GodMode: {player.IsGodModeEnabled} IsNotGrounded: {player.Role is FpcRole { IsGrounded: false }} AFKImunity: {player.RemoteAdminPermissions.HasFlag(PlayerPermissions.AFKImmunity)}");
                     continue;
-#pragma warning restore SA1013
                 }
 
                 if ((Plugin.AfkDict[player].Item2 - player.Position).sqrMagnitude > 2)
@@ -183,15 +200,15 @@ public class ServerHandlers
                     Plugin.AfkDict[player] = new Tuple<int, Vector3>(0, player.Position);
                 }
 
-                if (Plugin.AfkDict[player].Item1 >= config.AfkLimit)
+                if (Plugin.AfkDict[player].Item1 >= Configs.AfkLimit)
                 {
                     Plugin.AfkDict.Remove(player);
                     Log.Debug($"Kicking {player.Nickname} for being AFK.");
                     player.Kick("You were kicked by CommonUtilities for being AFK.");
                 }
-                else if (Plugin.AfkDict[player].Item1 >= (config.AfkLimit / 2))
+                else if (Plugin.AfkDict[player].Item1 >= (Configs.AfkLimit / 2))
                 {
-                    player.Broadcast(2, $"You have been AFK for {Plugin.AfkDict[player].Item1} seconds. You will be automatically kicked if you remain AFK for a total of {config.AfkLimit} seconds.", shouldClearPrevious: true);
+                    player.Broadcast(2, $"You have been AFK for {Plugin.AfkDict[player].Item1} seconds. You will be automatically kicked if you remain AFK for a total of {Configs.AfkLimit} seconds.", shouldClearPrevious: true);
                 }
 
                 Plugin.AfkDict[player] = new Tuple<int, Vector3>(Plugin.AfkDict[player].Item1 + 1, Plugin.AfkDict[player].Item2);

@@ -1,26 +1,26 @@
-namespace Common_Utilities.ConfigObjects
+using Common_Utilities.Interfaces;
+using PlayerRoles;
+
+namespace Common_Utilities.ConfigObjects;
+
+public class PlayerUpgradeChance : IChanceObject
 {
-    using PlayerRoles;
+    public string Original { get; set; }
 
-    public class PlayerUpgradeChance : IChanceObject
+    public string New { get; set; } = RoleTypeId.Spectator.ToString();
+
+    public double Chance { get; set; }
+
+    public bool KeepInventory { get; set; } = true;
+
+    public bool KeepHealth { get; set; } = true;
+
+    public void Deconstruct(out string oldRole, out string newRole, out double chance, out bool keepInventory, out bool keepHealth)
     {
-        public string Original { get; set; }
-
-        public string New { get; set; } = RoleTypeId.Spectator.ToString();
-
-        public double Chance { get; set; }
-
-        public bool KeepInventory { get; set; } = true;
-
-        public bool KeepHealth { get; set; } = true;
-
-        public void Deconstruct(out string oldRole, out string newRole, out double chance, out bool keepInventory, out bool keepHealth)
-        {
-            oldRole = Original;
-            newRole = New;
-            chance = Chance;
-            keepInventory = KeepInventory;
-            keepHealth = KeepHealth;
-        }
+        oldRole = Original;
+        newRole = New;
+        chance = Chance;
+        keepInventory = KeepInventory;
+        keepHealth = KeepHealth;
     }
 }

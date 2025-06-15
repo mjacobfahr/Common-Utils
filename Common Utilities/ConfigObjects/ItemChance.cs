@@ -1,3 +1,5 @@
+using Common_Utilities.Interfaces;
+
 namespace Common_Utilities.ConfigObjects;
 
 public class ItemChance : IChanceObject

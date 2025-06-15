@@ -1,113 +1,108 @@
-// ReSharper disable InconsistentNaming
-namespace Common_Utilities;
-
-#pragma warning disable SA1401 // Fields should be private
-using System;
-using System.Collections.Generic;
-
-using ConfigObjects;
-using Configs;
-using EventHandlers;
+global using Scp914KnobSetting = Scp914.Scp914KnobSetting;
+using Common_Utilities.ConfigObjects;
+using Common_Utilities.EventHandlers;
 using Exiled.API.Enums;
 using Exiled.API.Features;
 using MEC;
 using PlayerRoles;
-using Scp914;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
-
-#pragma warning disable SA1211
-using player = Exiled.Events.Handlers.Player;
-using scp914 = Exiled.Events.Handlers.Scp914;
-using server = Exiled.Events.Handlers.Server;
-using warhead = Exiled.Events.Handlers.Warhead;
+using PlayerEvents = Exiled.Events.Handlers.Player;
+using Scp914Events = Exiled.Events.Handlers.Scp914;
+using ServerEvents = Exiled.Events.Handlers.Server;
+using WarheadEvents = Exiled.Events.Handlers.Warhead;
 using Random = System.Random;
-#pragma warning restore SA1211
+
+namespace Common_Utilities;
 
 public class Plugin : Plugin<Config>
 {
-#pragma warning disable SA1307
-    public static Plugin Instance;
-    public static Random Random;
-    public PlayerHandlers playerHandlers;
-    private ServerHandlers serverHandlers;
-    private MapHandlers mapHandlers;
-#pragma warning restore SA1307
-        
-    public static List<CoroutineHandle> Coroutines { get; } = new();
-    
-    public static Dictionary<Player, Tuple<int, Vector3>> AfkDict { get; } = new();
+    public override string Author { get; } = "DeadServer Team";
 
-    public override string Name { get; } = "Common Utilities";
+    public override string Name { get; } = "Common Utils";
 
-    public override string Author { get; } = "ExMod-Team";
+    public override string Prefix { get; } = "CommonUtils";
 
     public override Version Version { get; } = new(8, 0, 2);
 
     public override Version RequiredExiledVersion { get; } = new(9, 6, 1);
 
-    public override string Prefix { get; } = "CommonUtilities";
+    public override PluginPriority Priority { get; } = PluginPriority.Higher;
 
-    public override PluginPriority Priority => PluginPriority.Higher;
+    public static Plugin Singleton { get; private set; }
+
+    public static Config Configs => Singleton.Config;
+
+    public static Random Random { get; } = new();
+
+    public PlayerHandlers PlayerHandlers { get; private set; } = new();
+
+    public ServerHandlers ServerHandlers { get; private set; } = new();
+
+    public MapHandlers MapHandlers { get; private set; } = new();
+
+    public static List<CoroutineHandle> Coroutines { get; } = new();
+
+    public static Dictionary<Exiled.API.Features.Player, Tuple<int, Vector3>> AfkDict { get; } = new();
 
     public override void OnEnabled()
     {
         if (Config.Debug)
-            DebugConfig();
-
-        Instance = this;
-
-        Random = new Random();
-
-        Log.Debug("Instantiating Events..");
-            
-        playerHandlers = new PlayerHandlers();
-        serverHandlers = new ServerHandlers();
-        mapHandlers = new MapHandlers();
-            
-        Log.Debug("Registering EventHandlers..");
-            
-        player.Hurting += playerHandlers.OnPlayerHurting;
-        player.Verified += playerHandlers.OnPlayerVerified;
-        player.Spawned += playerHandlers.OnSpawned;
-        player.Escaping += playerHandlers.OnEscaping;
-            
-        if (Config.HealthOnKill != null)
-            player.Died += playerHandlers.OnPlayerDied;
-            
-        if (Config.StartingInventories != null)
-            player.ChangingRole += playerHandlers.OnChangingRole;
-            
-        if (Config.RadioBatteryDrainMultiplier is not 1)
-            player.UsingRadioBattery += playerHandlers.OnUsingRadioBattery;
-            
-        if (Config.AfkLimit > 0)
         {
-            player.Jumping += playerHandlers.AntiAfkEventHandler;
-            player.Shooting += playerHandlers.AntiAfkEventHandler;
-            player.UsingItem += playerHandlers.AntiAfkEventHandler;
-            player.MakingNoise += playerHandlers.AntiAfkEventHandler;
-            player.ReloadingWeapon += playerHandlers.AntiAfkEventHandler;
-            player.ThrownProjectile += playerHandlers.AntiAfkEventHandler;
-            player.ChangingMoveState += playerHandlers.AntiAfkEventHandler;
-            player.InteractingDoor += playerHandlers.AntiAfkEventHandler;
-            player.InteractingElevator += playerHandlers.AntiAfkEventHandler;
+            DebugConfig();
         }
 
-        server.RoundEnded += serverHandlers.OnRoundEnded;
-        server.RoundStarted += serverHandlers.OnRoundStarted;
-        server.RestartingRound += serverHandlers.OnRestartingRound;
-        server.WaitingForPlayers += serverHandlers.OnWaitingForPlayers;
+        Singleton = this;
 
-        scp914.UpgradingPlayer += mapHandlers.OnUpgradingPlayer;
-            
-        if (Config.Scp914ItemChances != null)
-            scp914.UpgradingPickup += mapHandlers.OnUpgradingPickup;
-        if (Config.Scp914ItemChances != null)
-            scp914.UpgradingInventoryItem += mapHandlers.OnUpgradingInventoryItem;
+        Log.Debug("Registering EventHandlers..");
+        PlayerEvents.Hurting += PlayerHandlers.OnPlayerHurting;
+        PlayerEvents.Verified += PlayerHandlers.OnPlayerVerified;
+        PlayerEvents.Spawned += PlayerHandlers.OnSpawned;
+        PlayerEvents.Escaping += PlayerHandlers.OnEscaping;
+        if (Config.HealthOnKill != null)
+        {
+            PlayerEvents.Died += PlayerHandlers.OnPlayerDied;
+        }
+        if (Config.StartingInventories != null)
+        {
+            PlayerEvents.ChangingRole += PlayerHandlers.OnChangingRole;
+        }
+        if (Config.RadioBatteryDrainMultiplier is not 1)
+        {
+            PlayerEvents.UsingRadioBattery += PlayerHandlers.OnUsingRadioBattery;
+        }
+        if (Config.AfkLimit > 0)
+        {
+            PlayerEvents.Jumping += PlayerHandlers.AntiAfkEventHandler;
+            PlayerEvents.Shooting += PlayerHandlers.AntiAfkEventHandler;
+            PlayerEvents.UsingItem += PlayerHandlers.AntiAfkEventHandler;
+            PlayerEvents.MakingNoise += PlayerHandlers.AntiAfkEventHandler;
+            PlayerEvents.ReloadingWeapon += PlayerHandlers.AntiAfkEventHandler;
+            PlayerEvents.ThrownProjectile += PlayerHandlers.AntiAfkEventHandler;
+            PlayerEvents.ChangingMoveState += PlayerHandlers.AntiAfkEventHandler;
+            PlayerEvents.InteractingDoor += PlayerHandlers.AntiAfkEventHandler;
+            PlayerEvents.InteractingElevator += PlayerHandlers.AntiAfkEventHandler;
+        }
 
-        warhead.Starting += serverHandlers.OnWarheadStarting;
-        warhead.Stopping += serverHandlers.OnWarheadStopping;
-        
+        ServerEvents.RoundEnded += ServerHandlers.OnRoundEnded;
+        ServerEvents.RoundStarted += ServerHandlers.OnRoundStarted;
+        ServerEvents.RestartingRound += ServerHandlers.OnRestartingRound;
+        ServerEvents.WaitingForPlayers += ServerHandlers.OnWaitingForPlayers;
+
+        Scp914Events.UpgradingPlayer += MapHandlers.OnUpgradingPlayer;
+        if (Config.Scp914ItemChanges != null)
+        {
+            Scp914Events.UpgradingPickup += MapHandlers.OnUpgradingPickup;
+        }
+        if (Config.Scp914ItemChanges != null)
+        {
+            Scp914Events.UpgradingInventoryItem += MapHandlers.OnUpgradingInventoryItem;
+        }
+
+        WarheadEvents.Starting += ServerHandlers.OnWarheadStarting;
+        WarheadEvents.Stopping += ServerHandlers.OnWarheadStopping;
+
         Log.Debug("Registered EventHandlers");
 
         base.OnEnabled();
@@ -115,39 +110,39 @@ public class Plugin : Plugin<Config>
 
     public override void OnDisabled()
     {
-        player.Hurting -= playerHandlers.OnPlayerHurting;
-        player.Verified -= playerHandlers.OnPlayerVerified;
-        player.Spawned -= playerHandlers.OnSpawned;
-        player.Escaping -= playerHandlers.OnEscaping;
-        player.Died -= playerHandlers.OnPlayerDied;
-        player.ChangingRole -= playerHandlers.OnChangingRole;
-        player.UsingRadioBattery -= playerHandlers.OnUsingRadioBattery;
-        player.Jumping -= playerHandlers.AntiAfkEventHandler;
-        player.Shooting -= playerHandlers.AntiAfkEventHandler;
-        player.UsingItem -= playerHandlers.AntiAfkEventHandler;
-        player.MakingNoise -= playerHandlers.AntiAfkEventHandler;
-        player.ReloadingWeapon -= playerHandlers.AntiAfkEventHandler;
-        player.ThrownProjectile -= playerHandlers.AntiAfkEventHandler;
-        player.ChangingMoveState -= playerHandlers.AntiAfkEventHandler;
-        player.InteractingDoor -= playerHandlers.AntiAfkEventHandler;
-        player.InteractingElevator -= playerHandlers.AntiAfkEventHandler;
+        PlayerEvents.Hurting -= PlayerHandlers.OnPlayerHurting;
+        PlayerEvents.Verified -= PlayerHandlers.OnPlayerVerified;
+        PlayerEvents.Spawned -= PlayerHandlers.OnSpawned;
+        PlayerEvents.Escaping -= PlayerHandlers.OnEscaping;
+        PlayerEvents.Died -= PlayerHandlers.OnPlayerDied;
+        PlayerEvents.ChangingRole -= PlayerHandlers.OnChangingRole;
+        PlayerEvents.UsingRadioBattery -= PlayerHandlers.OnUsingRadioBattery;
+        PlayerEvents.Jumping -= PlayerHandlers.AntiAfkEventHandler;
+        PlayerEvents.Shooting -= PlayerHandlers.AntiAfkEventHandler;
+        PlayerEvents.UsingItem -= PlayerHandlers.AntiAfkEventHandler;
+        PlayerEvents.MakingNoise -= PlayerHandlers.AntiAfkEventHandler;
+        PlayerEvents.ReloadingWeapon -= PlayerHandlers.AntiAfkEventHandler;
+        PlayerEvents.ThrownProjectile -= PlayerHandlers.AntiAfkEventHandler;
+        PlayerEvents.ChangingMoveState -= PlayerHandlers.AntiAfkEventHandler;
+        PlayerEvents.InteractingDoor -= PlayerHandlers.AntiAfkEventHandler;
+        PlayerEvents.InteractingElevator -= PlayerHandlers.AntiAfkEventHandler;
 
-        server.RoundEnded -= serverHandlers.OnRoundEnded;
-        server.RoundStarted -= serverHandlers.OnRoundStarted;
-        server.RestartingRound -= serverHandlers.OnRestartingRound;
-        server.WaitingForPlayers -= serverHandlers.OnWaitingForPlayers;
+        ServerEvents.RoundEnded -= ServerHandlers.OnRoundEnded;
+        ServerEvents.RoundStarted -= ServerHandlers.OnRoundStarted;
+        ServerEvents.RestartingRound -= ServerHandlers.OnRestartingRound;
+        ServerEvents.WaitingForPlayers -= ServerHandlers.OnWaitingForPlayers;
 
-        scp914.UpgradingPlayer -= mapHandlers.OnUpgradingPlayer;
-        scp914.UpgradingPickup -= mapHandlers.OnUpgradingPickup;
-        scp914.UpgradingInventoryItem -= mapHandlers.OnUpgradingInventoryItem;
+        Scp914Events.UpgradingPlayer -= MapHandlers.OnUpgradingPlayer;
+        Scp914Events.UpgradingPickup -= MapHandlers.OnUpgradingPickup;
+        Scp914Events.UpgradingInventoryItem -= MapHandlers.OnUpgradingInventoryItem;
 
-        warhead.Starting -= serverHandlers.OnWarheadStarting;
-        warhead.Stopping -= serverHandlers.OnWarheadStopping;
-        
-        serverHandlers = null;
-        playerHandlers = null;
-        mapHandlers = null;
-            
+        WarheadEvents.Starting -= ServerHandlers.OnWarheadStarting;
+        WarheadEvents.Stopping -= ServerHandlers.OnWarheadStopping;
+
+        ServerHandlers = null;
+        PlayerHandlers = null;
+        MapHandlers = null;
+        Singleton = null;
         base.OnDisabled();
     }
 
@@ -173,10 +168,10 @@ public class Plugin : Plugin<Config>
             }
         }
 
-        if (Config.Scp914ItemChances != null)
+        if (Config.Scp914ItemChanges != null)
         {
-            Log.Debug($"{Config.Scp914ItemChances.Count}");
-            foreach (KeyValuePair<Scp914KnobSetting, List<ItemUpgradeChance>> upgrade in Config.Scp914ItemChances)
+            Log.Debug($"{Config.Scp914ItemChanges.Count}");
+            foreach (KeyValuePair<Scp914KnobSetting, List<ItemUpgradeChance>> upgrade in Config.Scp914ItemChanges)
             {
                 foreach ((string oldItem, string newItem, double chance, int count) in upgrade.Value)
                     Log.Debug($"914 Item Config: {upgrade.Key}: {oldItem} -> {newItem}x({count}) - {chance}");
