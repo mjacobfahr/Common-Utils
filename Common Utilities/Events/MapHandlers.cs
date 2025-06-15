@@ -14,21 +14,21 @@ using System.Linq;
 using UnityEngine;
 using ExiledScp914 = Exiled.API.Features.Scp914;    // Scp914 conflicts with Scp914 from Assembly-CSharp
 
-namespace Common_Utilities.EventHandlers;
+namespace Common_Utilities.Events;
 
 public class MapHandlers
 {
-    private Config Configs => Plugin.Singleton.Config;
+    private Config Configs => MainPlugin.Singleton.Config;
 
     public void OnUpgradingPickup(UpgradingPickupEventArgs ev)
     {
-        if (Configs.Scp914ItemChanges != null && Configs.Scp914ItemChanges.TryGetValue(ev.KnobSetting, out List<ItemUpgradeChance> outItemUpgradeChances))
+        if (Configs.Scp914ItemChances != null && Configs.Scp914ItemChances.TryGetValue(ev.KnobSetting, out List<Scp914ItemChance> outItemUpgradeChances))
         {
             Log.Debug($"{nameof(OnUpgradingPickup)}: Found valid config entries, filtering...");
 
-            List<ItemUpgradeChance> itemUpgradeChances = outItemUpgradeChances
-                .Where(x => 
-                    x.Original == ev.Pickup.Type.ToString() 
+            List<Scp914ItemChance> itemUpgradeChances = outItemUpgradeChances
+                .Where(x =>
+                    x.Original == ev.Pickup.Type.ToString()
                     || (CustomItem.TryGet(ev.Pickup, out CustomItem item) && item.Name == x.Original))
                 .ToList();
 
@@ -72,13 +72,13 @@ public class MapHandlers
 
     public void OnUpgradingInventoryItem(UpgradingInventoryItemEventArgs ev)
     {
-        if (Configs.Scp914ItemChanges != null && Configs.Scp914ItemChanges.TryGetValue(ev.KnobSetting, out List<ItemUpgradeChance> outItemUpgradeChances))
+        if (Configs.Scp914ItemChances != null && Configs.Scp914ItemChances.TryGetValue(ev.KnobSetting, out List<Scp914ItemChance> outItemUpgradeChances))
         {
             Log.Debug($"{nameof(OnUpgradingInventoryItem)}: Found valid config entries, filtering...");
 
-            List<ItemUpgradeChance> itemUpgradeChances = outItemUpgradeChances
-                .Where(x => 
-                    x.Original == ev.Item.Type.ToString() 
+            List<Scp914ItemChance> itemUpgradeChances = outItemUpgradeChances
+                .Where(x =>
+                    x.Original == ev.Item.Type.ToString()
                     || (CustomItem.TryGet(ev.Item, out CustomItem item) && item.Name == x.Original))
                 .ToList();
 
@@ -119,23 +119,23 @@ public class MapHandlers
 
     public void OnUpgradingPlayer(UpgradingPlayerEventArgs ev)
     {
-        if (Configs.Scp914ClassChanges != null && Configs.Scp914ClassChanges.TryGetValue(ev.KnobSetting, out List<PlayerUpgradeChance> outPlayerUpgradeChances))
+        if (Configs.Scp914RoleChances != null && Configs.Scp914RoleChances.TryGetValue(ev.KnobSetting, out List<Scp914RoleChance> outPlayerUpgradeChances))
         {
-            Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(Configs.Scp914ClassChanges)}: Found valid config entries, filtering...");
+            Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(Configs.Scp914RoleChances)}: Found valid config entries, filtering...");
 
-            List<PlayerUpgradeChance> playerUpgradeChances = outPlayerUpgradeChances
+            List<Scp914RoleChance> playerUpgradeChances = outPlayerUpgradeChances
                 .Where(x =>
                     x.Original == ev.Player.Role.Type.ToString()
                     || (CustomRole.TryGet(ev.Player, out IReadOnlyCollection<CustomRole> customRoles) && customRoles.Select(r => r.Name).Contains(x.Original)))
                 .ToList();
 
-            Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(Configs.Scp914ClassChanges)}: Finished filtering, found {playerUpgradeChances.Count} match(es).");
+            Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(Configs.Scp914RoleChances)}: Finished filtering, found {playerUpgradeChances.Count} match(es).");
 
             double rolledChance = Utils.RollChance(playerUpgradeChances);
 
             foreach ((string sourceRole, string destinationRole, double chance, bool keepInventory, bool keepHealth) in playerUpgradeChances)
             {
-                Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(Configs.Scp914ClassChanges)}: {ev.Player.Nickname} ({ev.Player.Role.Type}) is trying to upgrade his class. {sourceRole} -> {destinationRole}; keepInventory: {keepHealth}; keepHealth: {keepHealth}; {rolledChance} <= {chance} ({rolledChance <= chance})");
+                Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(Configs.Scp914RoleChances)}: {ev.Player.Nickname} ({ev.Player.Role.Type}) is trying to upgrade his class. {sourceRole} -> {destinationRole}; keepInventory: {keepHealth}; keepHealth: {keepHealth}; {rolledChance} <= {chance} ({rolledChance <= chance})");
                 if (rolledChance <= chance)
                 {
                     float originalHealth = ev.Player.Health;
@@ -159,19 +159,16 @@ public class MapHandlers
                     {
                         return;
                     }
-
                     if (keepHealth)
                     {
                         ev.Player.Health = originalHealth;
                     }
-
                     if (keepInventory)
                     {
                         foreach (var item in originalItems)
                         {
                             ev.Player.AddItem(item);
                         }
-
                         foreach (var kvp in originalAmmo)
                         {
                             ev.Player.SetAmmo(kvp.Key.GetAmmoType(), kvp.Value);
@@ -189,7 +186,7 @@ public class MapHandlers
             }
         }
 
-        if (Configs.Scp914EffectChances != null && (ev.Player.Role.Side != Side.Scp || !Configs.ScpsImmuneTo914Effects) && Configs.Scp914EffectChances.TryGetValue(ev.KnobSetting, out List<Scp914EffectChance> scp914EffectChances))
+        if (Configs.Scp914EffectChances != null && (ev.Player.Role.Side != Side.Scp || !Configs.ScpsImmuneToScp914Effects) && Configs.Scp914EffectChances.TryGetValue(ev.KnobSetting, out List<Scp914EffectChance> scp914EffectChances))
         {
             Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(Configs.Scp914EffectChances)}: Found valid config entries.");
 
@@ -228,9 +225,7 @@ public class MapHandlers
                 if (rolledChance <= chance)
                 {
                     ev.OutputPosition = ChoosePosition(zone, ignoredRooms, offset, roomType);
-
                     DealDamage(ev.Player, damage);
-
                     break;
                 }
 

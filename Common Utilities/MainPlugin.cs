@@ -1,6 +1,7 @@
 global using Scp914KnobSetting = Scp914.Scp914KnobSetting;
+
 using Common_Utilities.ConfigObjects;
-using Common_Utilities.EventHandlers;
+using Common_Utilities.Events;
 using Exiled.API.Enums;
 using Exiled.API.Features;
 using MEC;
@@ -8,6 +9,7 @@ using PlayerRoles;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using ItemEvents = Exiled.Events.Handlers.Item;
 using PlayerEvents = Exiled.Events.Handlers.Player;
 using Scp914Events = Exiled.Events.Handlers.Scp914;
 using ServerEvents = Exiled.Events.Handlers.Server;
@@ -16,7 +18,12 @@ using Random = System.Random;
 
 namespace Common_Utilities;
 
-public class Plugin : Plugin<Config>
+// TODO: There is an excessive amount of null checks throughout the codebase.
+//       The project has nullable disabled and most properties are default-constructed so this should not be necessary.
+// TODO: The IChanceObject roll logic is duplicated all throughout the codebase, abstract it to a utility method.
+// TODO: Separate some of the logic here into a "Configurable" events section and a "Core" utilities section that can be programmatically used by other plugins.
+
+public class MainPlugin : Plugin<Config>
 {
     public override string Author { get; } = "DeadServer Team";
 
@@ -30,11 +37,13 @@ public class Plugin : Plugin<Config>
 
     public override PluginPriority Priority { get; } = PluginPriority.Higher;
 
-    public static Plugin Singleton { get; private set; }
+    public static MainPlugin Singleton { get; private set; }
 
     public static Config Configs => Singleton.Config;
 
     public static Random Random { get; } = new();
+
+    public ItemHandlers ItemHandlers { get; private set; } = new();
 
     public PlayerHandlers PlayerHandlers { get; private set; } = new();
 
@@ -44,11 +53,11 @@ public class Plugin : Plugin<Config>
 
     public static List<CoroutineHandle> Coroutines { get; } = new();
 
-    public static Dictionary<Exiled.API.Features.Player, Tuple<int, Vector3>> AfkDict { get; } = new();
+    public static Dictionary<Player, Tuple<int, Vector3>> AfkDict { get; } = new();
 
     public override void OnEnabled()
     {
-        if (Config.Debug)
+        if (Configs.Debug)
         {
             DebugConfig();
         }
@@ -60,19 +69,20 @@ public class Plugin : Plugin<Config>
         PlayerEvents.Verified += PlayerHandlers.OnPlayerVerified;
         PlayerEvents.Spawned += PlayerHandlers.OnSpawned;
         PlayerEvents.Escaping += PlayerHandlers.OnEscaping;
-        if (Config.HealthOnKill != null)
+        if (Configs.DamageHealthSettings.HealthGainedOnKill is not null)
         {
             PlayerEvents.Died += PlayerHandlers.OnPlayerDied;
         }
-        if (Config.StartingInventories != null)
+        if (Configs.StartingInventories is not null)
         {
             PlayerEvents.ChangingRole += PlayerHandlers.OnChangingRole;
         }
-        if (Config.RadioBatteryDrainMultiplier is not 1)
+        if (Configs.GameplaySettings.RadioBatteryDrainMultiplier != 1.0f)
         {
             PlayerEvents.UsingRadioBattery += PlayerHandlers.OnUsingRadioBattery;
+            ItemEvents.UsingRadioPickupBattery += ItemHandlers.OnUsingRadioPickupBattery;
         }
-        if (Config.AfkLimit > 0)
+        if (Configs.ServerSettings.AfkLimit > 0)
         {
             PlayerEvents.Jumping += PlayerHandlers.AntiAfkEventHandler;
             PlayerEvents.Shooting += PlayerHandlers.AntiAfkEventHandler;
@@ -90,18 +100,18 @@ public class Plugin : Plugin<Config>
         ServerEvents.RestartingRound += ServerHandlers.OnRestartingRound;
         ServerEvents.WaitingForPlayers += ServerHandlers.OnWaitingForPlayers;
 
+        WarheadEvents.Starting += ServerHandlers.OnWarheadStarting;
+        WarheadEvents.Stopping += ServerHandlers.OnWarheadStopping;
+
         Scp914Events.UpgradingPlayer += MapHandlers.OnUpgradingPlayer;
-        if (Config.Scp914ItemChanges != null)
+        if (Configs.Scp914ItemChances is not null)
         {
             Scp914Events.UpgradingPickup += MapHandlers.OnUpgradingPickup;
         }
-        if (Config.Scp914ItemChanges != null)
+        if (Configs.Scp914ItemChances is not null)
         {
             Scp914Events.UpgradingInventoryItem += MapHandlers.OnUpgradingInventoryItem;
         }
-
-        WarheadEvents.Starting += ServerHandlers.OnWarheadStarting;
-        WarheadEvents.Stopping += ServerHandlers.OnWarheadStopping;
 
         Log.Debug("Registered EventHandlers");
 
@@ -117,6 +127,7 @@ public class Plugin : Plugin<Config>
         PlayerEvents.Died -= PlayerHandlers.OnPlayerDied;
         PlayerEvents.ChangingRole -= PlayerHandlers.OnChangingRole;
         PlayerEvents.UsingRadioBattery -= PlayerHandlers.OnUsingRadioBattery;
+        ItemEvents.UsingRadioPickupBattery -= ItemHandlers.OnUsingRadioPickupBattery;
         PlayerEvents.Jumping -= PlayerHandlers.AntiAfkEventHandler;
         PlayerEvents.Shooting -= PlayerHandlers.AntiAfkEventHandler;
         PlayerEvents.UsingItem -= PlayerHandlers.AntiAfkEventHandler;
@@ -132,15 +143,16 @@ public class Plugin : Plugin<Config>
         ServerEvents.RestartingRound -= ServerHandlers.OnRestartingRound;
         ServerEvents.WaitingForPlayers -= ServerHandlers.OnWaitingForPlayers;
 
+        WarheadEvents.Starting -= ServerHandlers.OnWarheadStarting;
+        WarheadEvents.Stopping -= ServerHandlers.OnWarheadStopping;
+
         Scp914Events.UpgradingPlayer -= MapHandlers.OnUpgradingPlayer;
         Scp914Events.UpgradingPickup -= MapHandlers.OnUpgradingPickup;
         Scp914Events.UpgradingInventoryItem -= MapHandlers.OnUpgradingInventoryItem;
 
-        WarheadEvents.Starting -= ServerHandlers.OnWarheadStarting;
-        WarheadEvents.Stopping -= ServerHandlers.OnWarheadStopping;
-
-        ServerHandlers = null;
+        ItemHandlers = null;
         PlayerHandlers = null;
+        ServerHandlers = null;
         MapHandlers = null;
         Singleton = null;
         base.OnDisabled();
@@ -148,14 +160,14 @@ public class Plugin : Plugin<Config>
 
     private void DebugConfig()
     {
-        if (Config.StartingInventories != null)
+        if (Configs.StartingInventories is not null)
         {
-            Log.Debug($"Starting Inventories: {Config.StartingInventories.Count}");
-            foreach (KeyValuePair<RoleTypeId, RoleInventory> kvp in Config.StartingInventories)
+            Log.Debug($"Starting Inventories: {Configs.StartingInventories.Count}");
+            foreach (KeyValuePair<RoleTypeId, StartingInventory> kvp in Configs.StartingInventories)
             {
                 for (int i = 0; i < kvp.Value.UsedSlots; i++)
                 {
-                    foreach (ItemChance chance in kvp.Value[i])
+                    foreach (StartingItem chance in kvp.Value[i])
                     {
                         Log.Debug($"Inventory Config: {kvp.Key} - Slot{i + 1}: {chance.ItemName} ({chance.Chance})");
                     }
@@ -168,46 +180,46 @@ public class Plugin : Plugin<Config>
             }
         }
 
-        if (Config.Scp914ItemChanges != null)
+        if (Configs.Scp914ItemChances is not null)
         {
-            Log.Debug($"{Config.Scp914ItemChanges.Count}");
-            foreach (KeyValuePair<Scp914KnobSetting, List<ItemUpgradeChance>> upgrade in Config.Scp914ItemChanges)
+            Log.Debug($"{Configs.Scp914ItemChances.Count}");
+            foreach (KeyValuePair<Scp914KnobSetting, List<Scp914ItemChance>> upgrade in Configs.Scp914ItemChances)
             {
                 foreach ((string oldItem, string newItem, double chance, int count) in upgrade.Value)
                     Log.Debug($"914 Item Config: {upgrade.Key}: {oldItem} -> {newItem}x({count}) - {chance}");
             }
         }
 
-        if (Config.Scp914ClassChanges != null)
+        if (Configs.Scp914RoleChances is not null)
         {
-            Log.Debug($"{Config.Scp914ClassChanges.Count}");
-            foreach (KeyValuePair<Scp914KnobSetting, List<PlayerUpgradeChance>> upgrade in Config.Scp914ClassChanges)
+            Log.Debug($"{Configs.Scp914RoleChances.Count}");
+            foreach (KeyValuePair<Scp914KnobSetting, List<Scp914RoleChance>> upgrade in Configs.Scp914RoleChances)
             {
                 foreach ((string oldRole, string newRole, double chance, bool keepInventory, bool keepHealth) in upgrade.Value)
                     Log.Debug($"914 Role Config: {upgrade.Key}: {oldRole} -> {newRole} - {chance} keepInventory: {keepInventory} keepHealth: {keepHealth}");
             }
         }
 
-        if (Config.Scp914EffectChances != null)
+        if (Configs.Scp914EffectChances is not null)
         {
-            Log.Debug($"{Config.Scp914EffectChances.Count}");
-            foreach (KeyValuePair<Scp914KnobSetting, List<Scp914EffectChance>> upgrade in Config.Scp914EffectChances)
+            Log.Debug($"{Configs.Scp914EffectChances.Count}");
+            foreach (KeyValuePair<Scp914KnobSetting, List<Scp914EffectChance>> upgrade in Configs.Scp914EffectChances)
             {
                 foreach ((EffectType effect, double chance, float duration) in upgrade.Value)
                     Log.Debug($"914 Effect Config: {upgrade.Key}: {effect} + {duration} - {chance}");
             }
         }
 
-        if (Config.Scp914TeleportChances != null)
+        if (Configs.Scp914TeleportChances is not null)
         {
-            Log.Debug($"{Config.Scp914TeleportChances.Count}");
-            foreach (KeyValuePair<Scp914KnobSetting, List<Scp914TeleportChance>> upgrade in Config.Scp914TeleportChances)
+            Log.Debug($"{Configs.Scp914TeleportChances.Count}");
+            foreach (KeyValuePair<Scp914KnobSetting, List<Scp914TeleportChance>> upgrade in Configs.Scp914TeleportChances)
             {
                 foreach ((RoomType room, List<RoomType> ignoredRooms, Vector3 offset, double chance, float damage, ZoneType zone) in upgrade.Value)
                 {
                     Log.Debug($"914 Teleport Config: {upgrade.Key}: {room}/{zone} + {offset} - {chance} [{damage}]");
                     Log.Debug("Ignored rooms:");
-                    if (ignoredRooms != null)
+                    if (ignoredRooms is not null)
                     {
                         foreach (RoomType roomType in ignoredRooms)
                         {

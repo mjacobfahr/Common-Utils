@@ -3,7 +3,7 @@ using PlayerRoles;
 
 namespace Common_Utilities.ConfigObjects;
 
-public class PlayerUpgradeChance : IChanceObject
+public class Scp914RoleChance : IChanceObject
 {
     public string Original { get; set; }
 

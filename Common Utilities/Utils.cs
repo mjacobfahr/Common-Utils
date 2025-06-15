@@ -8,8 +8,8 @@ public static class Utils
 {
     public static int RollChance(IEnumerable<IChanceObject> chanceObjects)
     {
-        double rolledChance = Plugin.Random.NextDouble();
-        if (Plugin.Singleton.Config.AdditiveProbabilities)
+        double rolledChance = MainPlugin.Random.NextDouble();
+        if (MainPlugin.Configs.AdditiveProbabilities)
         {
             rolledChance *= chanceObjects.Sum(x => x.Chance);
         }

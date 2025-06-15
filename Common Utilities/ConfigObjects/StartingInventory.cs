@@ -4,7 +4,7 @@ using YamlDotNet.Serialization;
 
 namespace Common_Utilities.ConfigObjects;
 
-public class RoleInventory
+public class StartingInventory
 {
     [YamlIgnore]
     public int UsedSlots
@@ -56,25 +56,25 @@ public class RoleInventory
         }
     }
 
-    public List<ItemChance> Slot1 { get; set; } = new();
+    public List<StartingItem> Slot1 { get; set; } = new();
 
-    public List<ItemChance> Slot2 { get; set; } = new();
+    public List<StartingItem> Slot2 { get; set; } = new();
 
-    public List<ItemChance> Slot3 { get; set; } = new();
+    public List<StartingItem> Slot3 { get; set; } = new();
 
-    public List<ItemChance> Slot4 { get; set; } = new();
+    public List<StartingItem> Slot4 { get; set; } = new();
 
-    public List<ItemChance> Slot5 { get; set; } = new();
+    public List<StartingItem> Slot5 { get; set; } = new();
 
-    public List<ItemChance> Slot6 { get; set; } = new();
+    public List<StartingItem> Slot6 { get; set; } = new();
 
-    public List<ItemChance> Slot7 { get; set; } = new();
+    public List<StartingItem> Slot7 { get; set; } = new();
 
-    public List<ItemChance> Slot8 { get; set; } = new();
+    public List<StartingItem> Slot8 { get; set; } = new();
 
     public List<StartingAmmo> Ammo { get; set; } = new();
 
-    public IEnumerable<ItemChance> this[int i] => i switch
+    public IEnumerable<StartingItem> this[int i] => i switch
     {
         0 => Slot1,
         1 => Slot2,

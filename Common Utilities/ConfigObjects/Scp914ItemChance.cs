@@ -2,7 +2,7 @@ using Common_Utilities.Interfaces;
 
 namespace Common_Utilities.ConfigObjects;
 
-public class ItemUpgradeChance : IChanceObject
+public class Scp914ItemChance : IChanceObject
 {
     public string Original { get; set; }
 
