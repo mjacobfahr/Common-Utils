@@ -35,7 +35,11 @@ public class GameplaySettings
         },
     };
 
-    [Description("Whether or not friendly fire should automatically turn on when a round ends (it will turn itself back off before the next round starts).")]
+    [Description("Whether or not friendly fire should be enabled during rounds.")]
+    public bool FriendlyFireEnabled { get; set; } = false;
+
+    [Description("Whether or not friendly fire should automatically turn on when a round ends. " +
+        "It will turn itself back off before the next round starts. Does not apply if FriendlyFireEnabled is on.")]
     public bool FriendlyFireOnRoundEnd { get; set; } = false;
 
     [Description("Whether or not to show player's health under their name when you look at them.")]

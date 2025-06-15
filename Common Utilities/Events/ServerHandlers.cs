@@ -16,20 +16,27 @@ public class ServerHandlers
     private ServerSettings ServerSettings => MainPlugin.Configs.ServerSettings;
     private GameplaySettings GameplaySettings => MainPlugin.Configs.GameplaySettings;
 
-    private bool friendlyFireDisable;
-
     public void OnWaitingForPlayers()
     {
+        if (ServerSettings.AutoLobbyLock)
+        {
+            Round.IsLobbyLocked = true;
+        }
         if (ServerSettings.AfkLimit > 0)
         {
             MainPlugin.AfkDict.Clear();
             MainPlugin.Coroutines.Add(Timing.RunCoroutine(AfkCheck()));
         }
-        if (friendlyFireDisable)
+
+        if (GameplaySettings.FriendlyFireEnabled)
+        {
+            Log.Debug($"{nameof(OnWaitingForPlayers)}: Enabling friendly fire.");
+            Server.FriendlyFire = true;
+        }
+        else if (GameplaySettings.FriendlyFireOnRoundEnd && Server.FriendlyFire)
         {
             Log.Debug($"{nameof(OnWaitingForPlayers)}: Disabling friendly fire.");
             Server.FriendlyFire = false;
-            friendlyFireDisable = false;
         }
         if (ServerSettings.TimedBroadcastDelay > 0)
         {
@@ -57,25 +64,19 @@ public class ServerHandlers
 
     public void OnRoundEnded(RoundEndedEventArgs ev)
     {
-        if (GameplaySettings.FriendlyFireOnRoundEnd && !Server.FriendlyFire)
+        if (!GameplaySettings.FriendlyFireEnabled && GameplaySettings.FriendlyFireOnRoundEnd && !Server.FriendlyFire)
         {
             Log.Debug($"{nameof(OnRoundEnded)}: Enabling friendly fire.");
             Server.FriendlyFire = true;
-            friendlyFireDisable = true;
         }
 
         Timing.KillCoroutines(MainPlugin.Coroutines.ToArray());
-
         MainPlugin.Coroutines.Clear();
     }
 
     public void OnRestartingRound()
     {
-        foreach (CoroutineHandle coroutine in MainPlugin.Coroutines)
-        {
-            Timing.KillCoroutines(coroutine);
-        }
-
+        Timing.KillCoroutines(MainPlugin.Coroutines.ToArray());
         MainPlugin.Coroutines.Clear();
     }
 

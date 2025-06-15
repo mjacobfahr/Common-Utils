@@ -6,6 +6,9 @@ namespace Common_Utilities.ConfigObjects;
 
 public class ServerSettings
 {
+    [Description("Whether the server should auto-lock the lobby while waiting for players before a new round.")]
+    public bool AutoLobbyLock { get; set; } = false;
+
     [Description("The text displayed at the timed interval specified below.")]
     public string TimedBroadcast { get; set; } = "<color=#bfff00>This server is running </color><color=red>EXILED Common-Utilities</color><color=#bfff00>, enjoy your stay!</color>";
 
