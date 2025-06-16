@@ -1,6 +1,6 @@
-using Common_Utilities.Interfaces;
+using CommonUtils.Config.Interfaces;
 
-namespace Common_Utilities.ConfigObjects;
+namespace CommonUtils.Config.ConfigObjects;
 
 public class Scp914ItemChance : IChanceObject
 {

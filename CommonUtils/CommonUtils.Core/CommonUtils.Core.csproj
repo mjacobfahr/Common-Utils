@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+		<OutputType>Library</OutputType>
+		<AssemblyName>$(ProjectName)</AssemblyName>
+		<Version>1.0.0</Version>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<Configuration>Debug;Release</Configuration>
+		<Platforms>AnyCPU</Platforms>
+		<RunPostBuildEvent>Always</RunPostBuildEvent>
+		<Nullable>disable</Nullable>
+	</PropertyGroup>
+
+	<!-- For development: copy output dll directly to EXILED path -->
+	<!--
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Copy SourceFiles="$(OutputPath)\$(ProjectName).dll" DestinationFolder="$(EXILED_DEPENDENCIES)" SkipUnchangedFiles="false" />
+	</Target>
+	-->
+
+    <Import Project="../CommonUtils.props" />
+
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>CommonUtils.Config</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!--<PackageReference Include="ExMod.Exiled" Version="9.6.1" />-->
+		<PackageReference Include="Lib.Harmony" Version="$(HarmonyVersion)" />
+        <PackageReference Include="StyleCop.Analyzers" Version="$(StyleCopVersion)" IncludeAssets="All" PrivateAssets="All" />
+    </ItemGroup>
+	
+    <ItemGroup>
+		<Reference Include="Assembly-CSharp" HintPath="$(EXILED_REFERENCES)\Assembly-CSharp-Publicized.dll" Private="false" />
+		<Reference Include="Assembly-CSharp-firstpass" HintPath="$(EXILED_REFERENCES)\Assembly-CSharp-firstpass.dll" Private="false" />	
+        <Reference Include="Mirror" HintPath="$(EXILED_REFERENCES)\Mirror.dll" Private="false" />
+        <Reference Include="UnityEngine" HintPath="$(EXILED_REFERENCES)\UnityEngine.dll" Private="false" />
+        <Reference Include="UnityEngine.CoreModule" HintPath="$(EXILED_REFERENCES)\UnityEngine.CoreModule.dll" Private="false" />
+        <Reference Include="UnityEngine.PhysicsModule" HintPath="$(EXILED_REFERENCES)\UnityEngine.PhysicsModule.dll" Private="false" />
+        <Reference Include="YamlDotNet" HintPath="$(EXILED_REFERENCES)\YamlDotNet.dll" Private="false" />
+    </ItemGroup>
+</Project>

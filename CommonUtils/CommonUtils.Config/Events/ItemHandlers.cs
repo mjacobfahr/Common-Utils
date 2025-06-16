@@ -1,7 +1,7 @@
-﻿using Common_Utilities.ConfigObjects;
+﻿using CommonUtils.Config.ConfigObjects;
 using Exiled.Events.EventArgs.Item;
 
-namespace Common_Utilities.Events;
+namespace CommonUtils.Config.Events;
 
 public class ItemHandlers
 {

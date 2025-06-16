@@ -2,7 +2,7 @@
 using PlayerRoles;
 using System.Collections.Generic;
 
-namespace Common_Utilities.API;
+namespace CommonUtils.Config.API;
 
 public static class API
 {

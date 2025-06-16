@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using YamlDotNet.Serialization;
 
-namespace Common_Utilities.ConfigObjects;
+namespace CommonUtils.Config.ConfigObjects;
 
 public class StartingInventory
 {

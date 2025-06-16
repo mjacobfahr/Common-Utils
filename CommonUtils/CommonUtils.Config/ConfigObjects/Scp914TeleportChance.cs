@@ -1,9 +1,9 @@
-using Common_Utilities.Interfaces;
+using CommonUtils.Config.Interfaces;
 using Exiled.API.Enums;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Common_Utilities.ConfigObjects;
+namespace CommonUtils.Config.ConfigObjects;
 
 public class Scp914TeleportChance : IChanceObject
 {

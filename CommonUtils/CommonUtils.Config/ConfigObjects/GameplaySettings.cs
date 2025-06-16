@@ -4,7 +4,7 @@ using System.ComponentModel;
 using UnityEngine;
 using ExiledBroadcast = Exiled.API.Features.Broadcast;  // conflicts with Broadcast from Assembly-CSharp
 
-namespace Common_Utilities.ConfigObjects;
+namespace CommonUtils.Config.ConfigObjects;
 
 public class GameplaySettings
 {

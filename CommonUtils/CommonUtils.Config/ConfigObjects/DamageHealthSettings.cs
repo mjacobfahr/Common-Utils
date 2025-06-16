@@ -2,7 +2,7 @@
 using PlayerRoles;
 using System.Collections.Generic;
 using System.ComponentModel;
-namespace Common_Utilities.ConfigObjects;
+namespace CommonUtils.Config.ConfigObjects;
 
 public class DamageHealthSettings
 {

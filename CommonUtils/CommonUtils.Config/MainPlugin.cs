@@ -1,7 +1,7 @@
 global using Scp914KnobSetting = Scp914.Scp914KnobSetting;
 
-using Common_Utilities.ConfigObjects;
-using Common_Utilities.Events;
+using CommonUtils.Config.ConfigObjects;
+using CommonUtils.Config.Events;
 using Exiled.API.Enums;
 using Exiled.API.Features;
 using MEC;
@@ -16,26 +16,25 @@ using ServerEvents = Exiled.Events.Handlers.Server;
 using WarheadEvents = Exiled.Events.Handlers.Warhead;
 using Random = System.Random;
 
-namespace Common_Utilities;
+namespace CommonUtils.Config;
 
 // TODO: There is an excessive amount of null checks throughout the codebase.
 //       The project has nullable disabled and most properties are default-constructed so this should not be necessary.
 // TODO: The IChanceObject roll logic is duplicated all throughout the codebase, abstract it to a utility method.
-// TODO: Separate some of the logic here into a "Configurable" events section and a "Core" utilities section that can be programmatically used by other plugins.
 
 public class MainPlugin : Plugin<Config>
 {
     public override string Author { get; } = "DeadServer Team";
 
-    public override string Name { get; } = "Common Utils";
+    public override string Name { get; } = "CommonUtils.Config";
 
-    public override string Prefix { get; } = "CommonUtils";
+    public override string Prefix { get; } = "CommonUtils.Config";
 
-    public override Version Version { get; } = new(8, 0, 2);
+    public override Version Version { get; } = new(9, 0, 0);
 
     public override Version RequiredExiledVersion { get; } = new(9, 6, 1);
 
-    public override PluginPriority Priority { get; } = PluginPriority.Higher;
+    public override PluginPriority Priority { get; } = PluginPriority.Medium;
 
     public static MainPlugin Singleton { get; private set; }
 
@@ -57,12 +56,12 @@ public class MainPlugin : Plugin<Config>
 
     public override void OnEnabled()
     {
+        Singleton = this;
+
         if (Configs.Debug)
         {
             DebugConfig();
         }
-
-        Singleton = this;
 
         Log.Debug("Registering EventHandlers..");
         PlayerEvents.Hurting += PlayerHandlers.OnPlayerHurting;

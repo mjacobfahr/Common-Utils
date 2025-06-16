@@ -1,4 +1,4 @@
-using Common_Utilities.ConfigObjects;
+using CommonUtils.Config.ConfigObjects;
 using Exiled.API.Enums;
 using Exiled.API.Extensions;
 using Exiled.API.Features;
@@ -14,7 +14,7 @@ using System.Linq;
 using UnityEngine;
 using ExiledScp914 = Exiled.API.Features.Scp914;    // Scp914 conflicts with Scp914 from Assembly-CSharp
 
-namespace Common_Utilities.Events;
+namespace CommonUtils.Config.Events;
 
 public class MapHandlers
 {

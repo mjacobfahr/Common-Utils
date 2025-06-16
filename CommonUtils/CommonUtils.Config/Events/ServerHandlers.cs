@@ -1,4 +1,4 @@
-using Common_Utilities.ConfigObjects;
+using CommonUtils.Config.ConfigObjects;
 using Exiled.API.Features;
 using Exiled.API.Features.Pickups;
 using Exiled.API.Features.Roles;
@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Common_Utilities.Events;
+namespace CommonUtils.Config.Events;
 
 public class ServerHandlers
 {

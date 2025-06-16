@@ -1,4 +1,4 @@
-using Common_Utilities.ConfigObjects;
+using CommonUtils.Config.ConfigObjects;
 using Exiled.API.Enums;
 using Exiled.API.Interfaces;
 using PlayerRoles;
@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using UnityEngine;
 
-namespace Common_Utilities;
+namespace CommonUtils.Config;
 
 public class Config : IConfig
 {

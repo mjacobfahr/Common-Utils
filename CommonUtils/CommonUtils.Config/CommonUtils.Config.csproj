@@ -1,26 +1,27 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-		<Authors>DeadServer Team</Authors>
-		<OutputType>Library</OutputType>
 		<AssemblyName>$(ProjectName)</AssemblyName>
+		<Version>9.0.0</Version>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-		<Version>7.1.0</Version>
-		<LangVersion>default</LangVersion>
-		<AssemblyVersion>7.0.6</AssemblyVersion>
-		<FileVersion>7.0.6</FileVersion>
-		<Nullable>disable</Nullable>
+		<Configuration>Debug;Release</Configuration>
 		<RunPostBuildEvent>Always</RunPostBuildEvent>
+		<Platforms>AnyCPU</Platforms>
+		<Nullable>disable</Nullable>
 	</PropertyGroup>
 
-    <Import Project="../Plugin.props" />
+	<!-- For development: copy output dll directly to EXILED path -->
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Copy SourceFiles="$(OutputPath)\$(ProjectName).dll" DestinationFolder="$(EXILED_PLUGINS)" SkipUnchangedFiles="false" />
+	</Target>
 
-    <ItemGroup>
-        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-            <_Parameter1>$(ProjectName)</_Parameter1>
-        </AssemblyAttribute>
-    </ItemGroup>
+    <Import Project="..\CommonUtils.props" />
+
+	<!--
+	<ItemGroup>
+		<ProjectReference Include="..\CommonUtils.Core\CommonUtils.Core.csproj" />
+	</ItemGroup>
+	-->
 
     <ItemGroup>
         <PackageReference Include="ExMod.Exiled" Version="9.6.1" />

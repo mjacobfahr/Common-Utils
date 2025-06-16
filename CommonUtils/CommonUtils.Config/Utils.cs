@@ -1,8 +1,8 @@
-﻿using Common_Utilities.Interfaces;
+﻿using CommonUtils.Config.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Common_Utilities;
+namespace CommonUtils.Config;
 
 public static class Utils
 {

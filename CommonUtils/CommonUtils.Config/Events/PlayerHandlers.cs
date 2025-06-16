@@ -1,4 +1,4 @@
-using Common_Utilities.ConfigObjects;
+using CommonUtils.Config.ConfigObjects;
 using Exiled.API.Features;
 using Exiled.API.Features.Roles;
 using Exiled.CustomItems.API.Features;
@@ -11,7 +11,7 @@ using System.Linq;
 using UnityEngine;
 using Player = Exiled.API.Features.Player;
 
-namespace Common_Utilities.Events;
+namespace CommonUtils.Config.Events;
 
 public class PlayerHandlers
 {
