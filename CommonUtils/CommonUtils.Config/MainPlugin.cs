@@ -34,7 +34,7 @@ public class MainPlugin : Plugin<Config>
 
     public override string Prefix { get; } = "CommonUtils.Config";
 
-    public override Version Version { get; } = new(9, 0, 0);
+    public override Version Version { get; } = new(1, 0, 0);
 
     public override Version RequiredExiledVersion { get; } = new(9, 6, 1);
 
