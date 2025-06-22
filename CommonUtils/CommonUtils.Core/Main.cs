@@ -1,3 +1,5 @@
+global using Log = CommonUtils.Core.Utils.Logger;
+
 using System;
 using Random = System.Random;
 
