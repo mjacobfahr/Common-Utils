@@ -1,4 +1,4 @@
-﻿namespace CommonUtils.Config.Interfaces;
+﻿namespace CommonUtils.Core.Interfaces;
 
 public interface IChanceObject
 {

@@ -1,4 +1,4 @@
-using CommonUtils.Config.Interfaces;
+using CommonUtils.Core.Interfaces;
 using Exiled.API.Enums;
 
 namespace CommonUtils.Config.ConfigObjects;

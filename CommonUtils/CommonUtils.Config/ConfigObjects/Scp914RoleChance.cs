@@ -1,4 +1,4 @@
-using CommonUtils.Config.Interfaces;
+using CommonUtils.Core.Interfaces;
 using PlayerRoles;
 
 namespace CommonUtils.Config.ConfigObjects;
