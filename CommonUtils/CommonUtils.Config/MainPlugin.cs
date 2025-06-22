@@ -21,6 +21,9 @@ namespace CommonUtils.Config;
 // TODO: There is an excessive amount of null checks throughout the codebase.
 //       The project has nullable disabled and most properties are default-constructed so this should not be necessary.
 // TODO: The IChanceObject roll logic is duplicated all throughout the codebase, abstract it to a utility method.
+//       - Make a routine in Core that handles the additiveProb logic of reducing roll each time, pass a OnSelected handler to the method
+//       - To help, IChanceObject should also require a Debug() method that logs its properties
+//       - Update rolling methods in MapHandlers.cs/PlayerHandlers.cs
 
 public class MainPlugin : Plugin<Config>
 {

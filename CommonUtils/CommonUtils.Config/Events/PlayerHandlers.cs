@@ -1,4 +1,5 @@
 using CommonUtils.Config.ConfigObjects;
+using CommonUtils.Core.Utils;
 using Exiled.API.Features;
 using Exiled.API.Features.Roles;
 using Exiled.CustomItems.API.Features;
@@ -179,8 +180,7 @@ public class PlayerHandlers
 
             Log.Debug($"{nameof(GetStartingInventory)} Finished checking groups, found {itemChances.Count} valid itemChances.");
 
-            double rolledChance = Utils.RollChance(itemChances);
-
+            double rolledChance = Chance.RollChance(itemChances, MainPlugin.Configs.AdditiveProbabilities);
             foreach ((string item, double chance) in itemChances)
             {
                 Log.Debug($"{nameof(GetStartingInventory)} Trying to assign to slot {i + 1} for {role}; item: {item}; {rolledChance} <= {chance} ({rolledChance <= chance}).");
