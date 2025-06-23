@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CommonUtils.Core.Utils;
+namespace CommonUtils.Core;
 
 public static class Chance
 {

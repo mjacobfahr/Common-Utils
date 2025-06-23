@@ -2,7 +2,7 @@
 using System;
 using System.Reflection;
 
-namespace CommonUtils.Core.Utils;
+namespace CommonUtils.Core;
 
 /// <summary>
 /// Recommended usage:
@@ -34,7 +34,7 @@ public static class Logger
     {
         if (PrintDebug)
         {
-            Send(message, LogLevel.Debug, DebugColor);
+            Send(message, LogLevel.Debug, DebugColor, assembly: Assembly.GetCallingAssembly());
         }
     }
 
@@ -43,23 +43,23 @@ public static class Logger
     {
         if (print)
         {
-            Send(message, LogLevel.Debug, DebugColor);
+            Send(message, LogLevel.Debug, DebugColor, assembly: Assembly.GetCallingAssembly());
         }
     }
 
     public static void Info(object message)
     {
-        Send(message, LogLevel.Info, InfoColor);
+        Send(message, LogLevel.Info, InfoColor, assembly: Assembly.GetCallingAssembly());
     }
 
     public static void Warn(object message)
     {
-        Send(message, LogLevel.Warn, WarnColor);
+        Send(message, LogLevel.Warn, WarnColor, assembly: Assembly.GetCallingAssembly());
     }
 
     public static void Error(object message)
     {
-        Send(message, LogLevel.Error, ErrorColor);
+        Send(message, LogLevel.Error, ErrorColor, assembly: Assembly.GetCallingAssembly());
     }
 
     // ----- Utility methods -----
@@ -72,7 +72,7 @@ public static class Logger
         }
         else
         {
-            return Assembly.GetCallingAssembly().GetName().Name;
+            return Assembly.GetCallingAssembly().GetName().Name;    // if assembly is not provided then this will always show "CommonUtils.Core"
         }
     }
 

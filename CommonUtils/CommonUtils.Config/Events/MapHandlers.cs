@@ -1,5 +1,5 @@
 using CommonUtils.Config.ConfigObjects;
-using CommonUtils.Core.Utils;
+using CommonUtils.Core;
 using Exiled.API.Enums;
 using Exiled.API.Extensions;
 using Exiled.API.Features;

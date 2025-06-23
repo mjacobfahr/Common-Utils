@@ -1,4 +1,4 @@
-global using Log = CommonUtils.Core.Utils.Logger;
+global using Log = CommonUtils.Core.Logger;
 
 using System;
 using Random = System.Random;

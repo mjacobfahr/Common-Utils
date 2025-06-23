@@ -1,4 +1,4 @@
-global using Log = CommonUtils.Core.Utils.Logger;
+global using Log = CommonUtils.Core.Logger;
 global using Scp914KnobSetting = Scp914.Scp914KnobSetting;
 
 using CommonUtils.Config.ConfigObjects;

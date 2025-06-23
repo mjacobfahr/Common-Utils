@@ -3,9 +3,9 @@ using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CommonUtils.Core.Utils;
+namespace CommonUtils.Core;
 
-public static class Audio
+public static class AudioHelper
 {
     /// <summary>
     /// Sets whether audio-related debug logs should print to console.

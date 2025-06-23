@@ -1,5 +1,5 @@
 using CommonUtils.Config.ConfigObjects;
-using CommonUtils.Core.Utils;
+using CommonUtils.Core;
 using Exiled.API.Features;
 using Exiled.API.Features.Roles;
 using Exiled.CustomItems.API.Features;
