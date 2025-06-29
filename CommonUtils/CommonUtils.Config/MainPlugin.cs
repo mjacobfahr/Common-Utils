@@ -61,10 +61,9 @@ public class MainPlugin : Plugin<Config>
     public override void OnEnabled()
     {
         Singleton = this;
-
         if (Configs.Debug)
         {
-            Log.PrintDebug = true;
+            Log.EnableDebug();
             DebugConfig();
         }
 

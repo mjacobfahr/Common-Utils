@@ -1,5 +1,6 @@
 ﻿using Discord;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace CommonUtils.Core;
@@ -8,7 +9,7 @@ namespace CommonUtils.Core;
 /// Recommended usage:
 /// - Add the following line to the very top of your main plugin cs file:
 /// global using Log = CommonUtils.Core.Utils.Logger;
-/// - In your plugin's OnEnabled() method, set the PrintDebug property based on your plugin's config.
+/// - In your plugin's OnEnabled() method, call EnableDebug() if Debug is active.
 /// Reasons to use:
 /// - LabApi logger doesn't auto-check the plugin's config to determine whether to print debug logs to console.
 /// - LabApi logger uses weird colors by default so this class tries to match the EXILED logger.
@@ -17,28 +18,29 @@ namespace CommonUtils.Core;
 /// </summary>
 public static class Logger
 {
-    // TODO: Might need to make this a HashSet<Assembly> or something like Exiled
-    public static bool PrintDebug { get; set; } = false;
+    public static HashSet<Assembly> DebugEnabled { get; set; } = new();
+
+    // TODO: Need to come up with a way to automatically infer debug when an assembly uses this class..
+    public static void EnableDebug()
+    {
+        DebugEnabled.Add(Assembly.GetCallingAssembly());
+    }
 
     // TODO: Make the color-scheme configurable via a simple enum with a few schemes to choose from
-    //       These settable properties will work for now
-    public static ConsoleColor DebugColor { get; set; } = ConsoleColor.Gray;        // Exiled: Green, LabApi: Gray
-    public static ConsoleColor InfoColor { get; set; } = ConsoleColor.Cyan;         // Exiled: Cyan, LabApi: White
-    public static ConsoleColor WarnColor { get; set; } = ConsoleColor.Magenta;      // Exiled: Magenta, LabApi: Yellow
-    public static ConsoleColor ErrorColor { get; set; } = ConsoleColor.DarkRed;     // Exiled: DarkRed, LabApi: Red
+    public static ConsoleColor DebugColor { get; set; } = ConsoleColor.Gray;            // Exiled: Green, LabApi: Gray
+    public static ConsoleColor InfoColor { get; set; } = ConsoleColor.Cyan;             // Exiled: Cyan, LabApi: White
+    public static ConsoleColor WarnColor { get; set; } = ConsoleColor.Magenta;          // Exiled: Magenta, LabApi: Yellow
+    public static ConsoleColor ErrorColor { get; set; } = ConsoleColor.DarkRed;         // Exiled: DarkRed, LabApi: Red
 
-    // ----- Log methods -----
-
-    // Automatically uses the PrintDebug flag
     public static void Debug(object message)
     {
-        if (PrintDebug)
+        if (DebugEnabled.Contains(Assembly.GetCallingAssembly()))
         {
             Send(message, LogLevel.Debug, DebugColor, assembly: Assembly.GetCallingAssembly());
         }
     }
 
-    // Alternatively can still provide a boolean at call-time
+    // Alternative that so callers can still provide a boolean at call-time
     public static void Debug(object message, bool print)
     {
         if (print)
@@ -62,8 +64,6 @@ public static class Logger
         Send(message, LogLevel.Error, ErrorColor, assembly: Assembly.GetCallingAssembly());
     }
 
-    // ----- Utility methods -----
-
     private static string FormatAssembly(Assembly assembly = null)
     {
         if (assembly is not null)
@@ -78,7 +78,7 @@ public static class Logger
 
     private static string FormatLevel(LogLevel level)
     {
-        return level.ToString().ToUpper().PadRight(5);  // pad right so all levels have the same width
+        return level.ToString().ToUpper();//.PadRight(5);  // pad right so all levels have the same width - however it makes all of these logs stick out next to other logs so maybe not
     }
 
     private static string FormatLog(object message, LogLevel level, Assembly assembly = null)
