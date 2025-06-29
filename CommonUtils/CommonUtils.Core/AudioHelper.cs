@@ -8,36 +8,33 @@ namespace CommonUtils.Core;
 public static class AudioHelper
 {
     /// <summary>
-    /// Sets whether audio-related debug logs should print to console.
-    /// </summary>
-    public static bool AudioDebug { get; set; } = false;
-
-    /// <summary>
     /// Loads an audio clip (by filename `audioFile`) from directory path `audioDir`.
     /// </summary>
-    public static void LoadAudioClip(string audioDir, string audioFile)
+    /// <returns>True if clip was loaded successfully.</returns>
+    public static bool LoadAudioClip(string audioDir, string audioFile, bool log = false)
     {
+        Log.Debug($"-- loading audio clip: {audioFile}", print: log);
+
         string filepath = Path.Combine(audioDir, audioFile);
         string name = audioFile.Replace(".ogg", "");
-        if (AudioDebug)
-        {
-            Log.Debug($"-- loading audio clip: {name}");
-        }
-        if (!AudioClipStorage.LoadClip(filepath, name))
-        {
-            Log.Error($"Failed to load clip: {filepath}");
-        }
+        return AudioClipStorage.LoadClip(filepath, name);
     }
 
     /// <summary>
     /// Loads all clips (by filename) in `audioFiles` from directory path `audioDir`.
     /// </summary>
-    public static void LoadAudioClips(string audioDir, List<string> audioFiles)
+    /// <returns>A list of all files that failed to load.</returns>
+    public static List<string> LoadAudioClips(string audioDir, List<string> audioFiles)
     {
+        List<string> failedClips = new();
         foreach (string file in audioFiles)
         {
-            LoadAudioClip(audioDir, file);
+            if (!LoadAudioClip(audioDir, file))
+            {
+                failedClips.Add(file);
+            }
         }
+        return failedClips;
     }
 
     /// <summary>
@@ -65,7 +62,7 @@ public static class AudioHelper
     /// <param name="minDistance">Volume will always be at full speakerVolume within this distance. Defaults to 5.0.</param>
     /// <param name="maxDistance">Volume will decrease with distance until it disappears at this distance. Defaults to 5.0.</param>
     /// <returns>The created Speaker object. If many speakers are created, the first is returned.</returns>
-    public static Speaker AttachAudioPlayer(AudioPlayer audioPlayer, GameObject parent, float speakerVolume = 1.0f, int speakerCount = 1, float minDistance = 5.0f, float maxDistance = 5.0f)
+    public static Speaker AttachAudioPlayer(AudioPlayer audioPlayer, GameObject parent, float speakerVolume = 1.0f, int speakerCount = 1, float minDistance = 5.0f, float maxDistance = 5.0f, bool log = false)
     {
         try
         {
@@ -95,19 +92,13 @@ public static class AudioHelper
                 }
             }
 
-            if (AudioDebug)
-            {
-                Log.Debug($"Setting audio player speaker to position: {audioPlayer.transform.position}");
-            }
+            Log.Debug($"Setting audio player speaker to position: {audioPlayer.transform.position}", print: log);
             return outSpeaker;
         }
         catch (Exception ex)
         {
             Log.Error($"Exception during SetAudioPlayerParent(): {ex.Message}");
-            if (AudioDebug)
-            {
-                Log.Debug($"-- stacktrace: {ex.StackTrace}");
-            }
+            Log.Debug($"-- stacktrace: {ex.StackTrace}", print: log);
             return null;
         }
     }
