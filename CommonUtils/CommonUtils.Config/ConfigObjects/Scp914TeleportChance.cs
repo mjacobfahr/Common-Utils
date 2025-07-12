@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace CommonUtils.Config.ConfigObjects;
 
-public class Scp914TeleportChance : IChanceObject
+public class Scp914TeleportChance : IChanceObjectD
 {
     public ZoneType Zone { get; set; } = ZoneType.Unspecified;
 

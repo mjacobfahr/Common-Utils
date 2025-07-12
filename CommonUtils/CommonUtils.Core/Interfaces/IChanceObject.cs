@@ -2,5 +2,5 @@
 
 public interface IChanceObject
 {
-    public double Chance { get; set; }
+    public int Chance { get; set; }
 }

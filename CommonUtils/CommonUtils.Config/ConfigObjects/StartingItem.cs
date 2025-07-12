@@ -2,7 +2,7 @@ using CommonUtils.Core.Interfaces;
 
 namespace CommonUtils.Config.ConfigObjects;
 
-public class StartingItem : IChanceObject
+public class StartingItem : IChanceObjectD
 {
     public string ItemName { get; set; } = ItemType.None.ToString();
 

@@ -3,7 +3,7 @@ using Exiled.API.Enums;
 
 namespace CommonUtils.Config.ConfigObjects;
 
-public class Scp914EffectChance : IChanceObject
+public class Scp914EffectChance : IChanceObjectD
 {
     public EffectType Effect { get; set; }
 

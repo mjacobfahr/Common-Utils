@@ -35,8 +35,8 @@ public class MapHandlers
 
             Log.Debug($"{nameof(OnUpgradingPickup)}: Fnished filtering, found {itemUpgradeChances.Count} match(es).");
 
-            double rolledChance = Chance.RollChance(itemUpgradeChances, MainPlugin.Configs.AdditiveProbabilities);
-            foreach ((string sourceItem, string destinationItem, double chance, int count) in itemUpgradeChances)
+            double rolledChance = ChanceHelper.RollChance(itemChances, MainPlugin.Configs.AdditiveProbabilities);
+            foreach ((string sourceItem, string destinationItem, double chance, int count) in itemChances)
             {
                 Log.Debug($"{nameof(OnUpgradingPickup)}: SCP-914 is trying to upgrade a {ev.Pickup.Type}. {sourceItem} -> {destinationItem} (x{count}); {rolledChance} <= {chance} ({rolledChance <= chance})");
 
@@ -84,8 +84,8 @@ public class MapHandlers
 
             Log.Debug($"{nameof(OnUpgradingInventoryItem)}: Finished filtering, found {itemUpgradeChances.Count} match(es).");
 
-            double rolledChance = Chance.RollChance(itemUpgradeChances, MainPlugin.Configs.AdditiveProbabilities);
-            foreach ((string sourceItem, string destinationItem, double chance, int count) in itemUpgradeChances)
+            double rolledChance = ChanceHelper.RollChance(itemChances, MainPlugin.Configs.AdditiveProbabilities);
+            foreach ((string sourceItem, string destinationItem, double chance, int count) in itemChances)
             {
                 Log.Debug($"{nameof(OnUpgradingInventoryItem)}: {ev.Player.Nickname} is attempting to upgrade an inventory item(s) {ev.Item.Type}. {sourceItem} -> {destinationItem} (x{count}); {rolledChance} <= {chance} ({rolledChance <= chance})");
 
@@ -123,6 +123,7 @@ public class MapHandlers
             Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(Configs.Scp914RoleChances)}: Found valid config entries, filtering...");
 
             List<Scp914RoleChance> playerUpgradeChances = outPlayerUpgradeChances
+            double rolledChance = ChanceHelper.RollChance(effectChances, MainPlugin.Configs.AdditiveProbabilities);
                 .Where(x =>
                     x.Original == ev.Player.Role.Type.ToString()
                     || (CustomRole.TryGet(ev.Player, out IReadOnlyCollection<CustomRole> customRoles) && customRoles.Select(r => r.Name).Contains(x.Original)))
@@ -130,8 +131,8 @@ public class MapHandlers
 
             Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(Configs.Scp914RoleChances)}: Finished filtering, found {playerUpgradeChances.Count} match(es).");
 
-            double rolledChance = Chance.RollChance(playerUpgradeChances, MainPlugin.Configs.AdditiveProbabilities);
-            foreach ((string sourceRole, string destinationRole, double chance, bool keepInventory, bool keepHealth) in playerUpgradeChances)
+            double rolledChance = ChanceHelper.RollChance(roleChances, MainPlugin.Configs.AdditiveProbabilities);
+            foreach ((string sourceRole, string destinationRole, double chance, bool keepInventory, bool keepHealth) in roleChances)
             {
                 Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(Configs.Scp914RoleChances)}: {ev.Player.Nickname} ({ev.Player.Role.Type}) is trying to upgrade his class. {sourceRole} -> {destinationRole}; keepInventory: {keepHealth}; keepHealth: {keepHealth}; {rolledChance} <= {chance} ({rolledChance <= chance})");
                 if (rolledChance <= chance)
@@ -188,7 +189,6 @@ public class MapHandlers
         {
             Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(Configs.Scp914EffectChances)}: Found valid config entries.");
 
-            double rolledChance = Chance.RollChance(scp914EffectChances, MainPlugin.Configs.AdditiveProbabilities);
             foreach ((EffectType effect, double chance, float duration) in scp914EffectChances)
             {
                 Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(Configs.Scp914EffectChances)}: {ev.Player.Nickname} is trying to gain an effect through SCP-914 {effect} ({duration}s); {rolledChance} <= {chance} ({rolledChance <= chance})");
@@ -213,8 +213,8 @@ public class MapHandlers
         {
             Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(Configs.Scp914TeleportChances)}: Found valid config entries.");
 
-            double rolledChance = Chance.RollChance(scp914TeleportChances, MainPlugin.Configs.AdditiveProbabilities);
-            foreach ((RoomType roomType, List<RoomType> ignoredRooms, Vector3 offset, double chance, float damage, ZoneType zone) in scp914TeleportChances)
+            double rolledChance = ChanceHelper.RollChance(teleportChances, MainPlugin.Configs.AdditiveProbabilities);
+            foreach ((RoomType roomType, List<RoomType> ignoredRooms, Vector3 offset, double chance, float damage, ZoneType zone) in teleportChances)
             {
                 Log.Debug($"{nameof(OnUpgradingPlayer)} : {nameof(Configs.Scp914TeleportChances)}: {ev.Player.Nickname} is trying to be teleported by 914. {roomType} + {offset}; {zone} + {ignoredRooms?.Count} ignored rooms; damage: {damage}; {rolledChance} <= {chance} ({rolledChance <= chance})");
 

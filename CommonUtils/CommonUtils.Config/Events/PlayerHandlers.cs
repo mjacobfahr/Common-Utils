@@ -180,7 +180,7 @@ public class PlayerHandlers
 
             Log.Debug($"{nameof(GetStartingInventory)} Finished checking groups, found {itemChances.Count} valid itemChances.");
 
-            double rolledChance = Chance.RollChance(itemChances, MainPlugin.Configs.AdditiveProbabilities);
+            double rolledChance = ChanceHelper.RollChance(itemChances, MainPlugin.Configs.AdditiveProbabilities);
             foreach ((string item, double chance) in itemChances)
             {
                 Log.Debug($"{nameof(GetStartingInventory)} Trying to assign to slot {i + 1} for {role}; item: {item}; {rolledChance} <= {chance} ({rolledChance <= chance}).");
