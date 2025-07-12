@@ -32,36 +32,37 @@ public static class Logger
     public static ConsoleColor WarnColor { get; set; } = ConsoleColor.Magenta;          // Exiled: Magenta, LabApi: Yellow
     public static ConsoleColor ErrorColor { get; set; } = ConsoleColor.DarkRed;         // Exiled: DarkRed, LabApi: Red
 
-    public static void Debug(object message)
+    public static void Debug(object message, Assembly assembly = null)
     {
-        if (DebugEnabled.Contains(Assembly.GetCallingAssembly()))
+        assembly ??= Assembly.GetCallingAssembly();
+        if (DebugEnabled.Contains(assembly))
         {
-            Send(message, LogLevel.Debug, DebugColor, assembly: Assembly.GetCallingAssembly());
+            Send(message, LogLevel.Debug, DebugColor, assembly: assembly);
         }
     }
 
     // Alternative that so callers can still provide a boolean at call-time
-    public static void Debug(object message, bool print)
+    public static void Debug(object message, bool print, Assembly assembly = null)
     {
         if (print)
         {
-            Send(message, LogLevel.Debug, DebugColor, assembly: Assembly.GetCallingAssembly());
+            Send(message, LogLevel.Debug, DebugColor, assembly: assembly ?? Assembly.GetCallingAssembly());
         }
     }
 
-    public static void Info(object message)
+    public static void Info(object message, Assembly assembly = null)
     {
-        Send(message, LogLevel.Info, InfoColor, assembly: Assembly.GetCallingAssembly());
+        Send(message, LogLevel.Info, InfoColor, assembly: assembly ?? Assembly.GetCallingAssembly());
     }
 
-    public static void Warn(object message)
+    public static void Warn(object message, Assembly assembly = null)
     {
-        Send(message, LogLevel.Warn, WarnColor, assembly: Assembly.GetCallingAssembly());
+        Send(message, LogLevel.Warn, WarnColor, assembly: assembly ?? Assembly.GetCallingAssembly());
     }
 
-    public static void Error(object message)
+    public static void Error(object message, Assembly assembly = null)
     {
-        Send(message, LogLevel.Error, ErrorColor, assembly: Assembly.GetCallingAssembly());
+        Send(message, LogLevel.Error, ErrorColor, assembly: assembly ?? Assembly.GetCallingAssembly());
     }
 
     private static string FormatAssembly(Assembly assembly = null)
@@ -78,7 +79,8 @@ public static class Logger
 
     private static string FormatLevel(LogLevel level)
     {
-        return level.ToString().ToUpper();//.PadRight(5);  // pad right so all levels have the same width - however it makes all of these logs stick out next to other logs so maybe not
+        return level.ToString().ToUpper().PadRight(5);      // pad right so all levels have the same width
+        //return level.ToString().ToUpper();                  // however the padding makes all of these logs stick out next to other logs so maybe not
     }
 
     private static string FormatLog(object message, LogLevel level, Assembly assembly = null)

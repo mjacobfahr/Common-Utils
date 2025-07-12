@@ -80,7 +80,7 @@ public class ServerHandlers
         MainPlugin.Coroutines.Clear();
     }
 
-    public void OnWarheadStarting(StartingEventArgs _)
+    public void OnWarheadStarting(StartingEventArgs ev)
     {
         if (!GameplaySettings.WarheadChangeColor)
         {
@@ -93,7 +93,7 @@ public class ServerHandlers
         }
     }
 
-    public void OnWarheadStopping(StoppingEventArgs _)
+    public void OnWarheadStopping(StoppingEventArgs ev)
     {
         if (!GameplaySettings.WarheadChangeColor || Warhead.IsLocked)
         {
@@ -193,9 +193,11 @@ public class ServerHandlers
                     || player.RemoteAdminPermissions.HasFlag(PlayerPermissions.AFKImmunity)
                     || ServerSettings.AfkIgnoredRoles.Contains(player.Role.Type))
                 {
+#pragma warning disable SA1013  // ... seems impossible to resolve the braces around IsGrounded correctly ...
                     Log.Debug($"Player {player.Nickname} ({player.Role.Type}) is not a checkable player. NoClip: {player.IsNoclipPermitted} GodMode: {player.IsGodModeEnabled} " +
                         $"IsNotGrounded: {player.Role is FpcRole { IsGrounded: false }} AFKImunity: {player.RemoteAdminPermissions.HasFlag(PlayerPermissions.AFKImmunity)}");
                     continue;
+#pragma warning restore SA1013
                 }
 
                 if ((MainPlugin.AfkDict[player].Item2 - player.Position).sqrMagnitude > 2)

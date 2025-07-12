@@ -20,7 +20,7 @@
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<DebugType>Portable</DebugType>
+		<DebugType>None</DebugType>
 	</PropertyGroup>
 
 	<PropertyGroup>

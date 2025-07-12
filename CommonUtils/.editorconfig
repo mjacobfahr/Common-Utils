@@ -8,6 +8,12 @@ indent_style = 2
 [*.props]
 indent_style = 2
 
+#### CS rules ####
+[*.cs]
+
+## Ignore all XML docstring requirements :)
+dotnet_diagnostic.CS1591.severity = none
+
 
 #### StyleCop Analyzer rules ####
 [*.cs]
@@ -93,6 +99,7 @@ dotnet_diagnostic.SA1520.severity = none
 dotnet_diagnostic.SA1600.severity = none
 dotnet_diagnostic.SA1601.severity = none
 dotnet_diagnostic.SA1602.severity = none
+dotnet_diagnostic.SA1603.severity = none
 dotnet_diagnostic.SA1604.severity = none
 dotnet_diagnostic.SA1605.severity = none
 dotnet_diagnostic.SA1606.severity = none
@@ -117,6 +124,11 @@ dotnet_diagnostic.SA1624.severity = none
 dotnet_diagnostic.SA1625.severity = none
 dotnet_diagnostic.SA1626.severity = none
 dotnet_diagnostic.SA1627.severity = none
+dotnet_diagnostic.SA1628.severity = none
+dotnet_diagnostic.SA1629.severity = none
+dotnet_diagnostic.SA1630.severity = none
+dotnet_diagnostic.SA1631.severity = none
+dotnet_diagnostic.SA1632.severity = none
 dotnet_diagnostic.SA1633.severity = none
 dotnet_diagnostic.SA1634.severity = none
 dotnet_diagnostic.SA1635.severity = none

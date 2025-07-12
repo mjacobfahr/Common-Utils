@@ -12,9 +12,9 @@
 	</PropertyGroup>
 
 	<!-- For development: copy output dll directly to EXILED path -->
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Copy SourceFiles="$(OutputPath)\$(ProjectName).dll" DestinationFolder="$(EXILED_DEPENDENCIES)" SkipUnchangedFiles="false" />
-		<Copy SourceFiles="$(OutputPath)\$(ProjectName).dll" DestinationFolder="$(LABAPI_DEPENDENCIES)" SkipUnchangedFiles="false" />
+	<Target Name="CopyToDependencies" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Debug'">
+		<Copy SourceFiles="$(OutputPath)$(ProjectName).dll" DestinationFolder="$(EXILED_DEPENDENCIES)" SkipUnchangedFiles="false" />
+		<Copy SourceFiles="$(OutputPath)$(ProjectName).dll" DestinationFolder="$(LABAPI_DEPENDENCIES)" SkipUnchangedFiles="false" />
 	</Target>
 
     <Import Project="../CommonUtils.props" />
@@ -37,10 +37,6 @@
 		<Reference Include="Assembly-CSharp" HintPath="$(SL_REFERENCES)\Assembly-CSharp-Publicized.dll" Private="false" />
 		<Reference Include="Assembly-CSharp-firstpass" HintPath="$(SL_REFERENCES)\Assembly-CSharp-firstpass.dll" Private="false" />
 		<Reference Include="LabApi" HintPath="$(SL_REFERENCES)\LabApi.dll" Private="false" />
-        <Reference Include="Mirror" HintPath="$(SL_REFERENCES)\Mirror.dll" Private="false" />
-        <Reference Include="UnityEngine" HintPath="$(SL_REFERENCES)\UnityEngine.dll" Private="false" />
         <Reference Include="UnityEngine.CoreModule" HintPath="$(SL_REFERENCES)\UnityEngine.CoreModule.dll" Private="false" />
-        <Reference Include="UnityEngine.PhysicsModule" HintPath="$(SL_REFERENCES)\UnityEngine.PhysicsModule.dll" Private="false" />
-        <Reference Include="YamlDotNet" HintPath="$(SL_REFERENCES)\YamlDotNet.dll" Private="false" />
     </ItemGroup>
 </Project>
