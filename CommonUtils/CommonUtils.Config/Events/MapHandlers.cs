@@ -21,13 +21,75 @@ public class MapHandlers
 {
     private Config Configs => MainPlugin.Singleton.Config;
 
-    public void OnUpgradingPickup(UpgradingPickupEventArgs ev)
-    {
-        if (Configs.Scp914ItemChances != null && Configs.Scp914ItemChances.TryGetValue(ev.KnobSetting, out List<Scp914ItemChance> outItemUpgradeChances))
-        {
-            Log.Debug($"{nameof(OnUpgradingPickup)}: Found valid config entries, filtering...");
+    private CoroutineHandle DiscoHandle { get; set; }
 
-            List<Scp914ItemChance> itemUpgradeChances = outItemUpgradeChances
+    private IEnumerator<float> DiscoCoroutine(Scp914KnobSetting knobSetting)
+    {
+        Log.Debug($"DiscoCoroutine: starting loop - knobSetting: {knobSetting} - isWorking: {ExiledScp914.IsWorking}");
+        float delay = Configs.Scp914Disco.DelayInitial;
+        Room room914 = Room.Get(RoomType.Lcz914);
+
+        while (ExiledScp914.IsWorking)
+        {
+            // don't set lights if lights have been disabled
+            if (!room914.AreLightsOff)
+            {
+                Color newColor;
+                if (knobSetting == Scp914KnobSetting.Rough)
+                {
+                    // TODO: Make this option configurable - maybe a dict of KnobSettings -> OverrideColors
+                    if (room914.Color == Color.red)
+                    {
+                        newColor = new Color(0.5f, 0.0f, 0.0f);
+                    }
+                    else
+                    {
+                        newColor = Color.red;
+                    }
+                }
+                else
+                {
+                    // TODO: Could be improved with a disco-themed color pack but meh this works
+                    float h = (float)MainPlugin.Random.NextDouble();
+                    float s = 1.0f;
+                    float v = 1.0f;
+                    newColor = Color.HSVToRGB(h, s, v);
+                }
+                Log.Debug($"DiscoCoroutine: setting room color to: {newColor}");
+                room914.Color = newColor;
+            }
+            else
+            {
+                Log.Debug($"DiscoCoroutine: lights are off");
+            }
+
+            // adjust delay and wait
+            delay += Configs.Scp914Disco.DelayChange;
+            delay = delay >= Configs.Scp914Disco.DelayMinimum ? delay : Configs.Scp914Disco.DelayMinimum;
+            delay = delay <= Configs.Scp914Disco.DelayMaximum ? delay : Configs.Scp914Disco.DelayMaximum;
+            yield return Timing.WaitForSeconds(delay);
+        }
+
+        // restore color
+        if (!room914.AreLightsOff)
+        {
+            room914.Color = Color.clear;
+        }
+    }
+
+    public void OnActivating(ActivatingEventArgs ev)
+    {
+        Timing.KillCoroutines(DiscoHandle);
+        if (Configs.Scp914Disco.Enabled)
+        {
+            Log.Info($"SCP914 activating: starting disco lights");
+
+            DiscoHandle = Timing.RunCoroutine(DiscoCoroutine(ev.KnobSetting));
+            Timing.WaitUntilDone(DiscoHandle);
+        }
+    }
+
+    public void OnUpgradingPickup(UpgradingPickupEventArgs ev)
                 .Where(x =>
                     x.Original == ev.Pickup.Type.ToString()
                     || (CustomItem.TryGet(ev.Pickup, out CustomItem item) && item.Name == x.Original))

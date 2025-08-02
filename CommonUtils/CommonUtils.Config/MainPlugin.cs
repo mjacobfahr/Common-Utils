@@ -3,11 +3,14 @@ global using Scp914KnobSetting = Scp914.Scp914KnobSetting;
 
 using CommonUtils.Config.ConfigObjects;
 using CommonUtils.Config.Events;
+using CommonUtils.Core;
+using CommonUtils.Core.Interfaces;
 using Exiled.API.Enums;
 using Exiled.API.Features;
 using MEC;
 using PlayerRoles;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using ItemEvents = Exiled.Events.Handlers.Item;
@@ -64,8 +67,8 @@ public class MainPlugin : Plugin<Config>
         if (Configs.Debug)
         {
             Log.EnableDebug();
-            DebugConfig();
         }
+        ValidateConfig();
 
         Log.Debug("Registering EventHandlers..");
         PlayerEvents.Hurting += PlayerHandlers.OnPlayerHurting;
@@ -106,6 +109,7 @@ public class MainPlugin : Plugin<Config>
         WarheadEvents.Starting += ServerHandlers.OnWarheadStarting;
         WarheadEvents.Stopping += ServerHandlers.OnWarheadStopping;
 
+        Scp914Events.Activating += MapHandlers.OnActivating;
         Scp914Events.UpgradingPlayer += MapHandlers.OnUpgradingPlayer;
         if (Configs.Scp914ItemChances is not null)
         {
@@ -152,6 +156,7 @@ public class MainPlugin : Plugin<Config>
         Scp914Events.UpgradingPlayer -= MapHandlers.OnUpgradingPlayer;
         Scp914Events.UpgradingPickup -= MapHandlers.OnUpgradingPickup;
         Scp914Events.UpgradingInventoryItem -= MapHandlers.OnUpgradingInventoryItem;
+        Scp914Events.Activating -= MapHandlers.OnActivating;
 
         ItemHandlers = null;
         PlayerHandlers = null;
@@ -161,76 +166,195 @@ public class MainPlugin : Plugin<Config>
         base.OnDisabled();
     }
 
-    private void DebugConfig()
+    private void ValidateConfig()
     {
-        if (Configs.StartingInventories is not null)
+        // First validate and make sure config objects (that did not get default) are not null
+        bool foundNulls = false;
+        if (Configs.StartingInventories is null)
         {
-            Log.Debug($"Starting Inventories: {Configs.StartingInventories.Count}");
-            foreach (KeyValuePair<RoleTypeId, StartingInventory> kvp in Configs.StartingInventories)
+            foundNulls = true;
+            Configs.StartingInventories = new();
+            // TODO: Add a default entry for each RoleTypeId - ideally if its null we just use the default config value
+        }
+
+        if (Configs.Scp914ItemChances is null)
+        {
+            foundNulls = true;
+            Configs.Scp914ItemChances = CreateDefaultUpgradeChances<Scp914ItemChance>();
+        }
+        else
+        {
+            Configs.Scp914ItemChances = AddDefaultUpgradeChances(Configs.Scp914ItemChances);
+        }
+        if (Configs.Scp914EffectChances is null)
+        {
+            foundNulls = true;
+            Configs.Scp914EffectChances = CreateDefaultUpgradeChances<Scp914EffectChance>();
+        }
+        else
+        {
+            Configs.Scp914EffectChances = AddDefaultUpgradeChances(Configs.Scp914EffectChances);
+        }
+        if (Configs.Scp914RoleChances is null)
+        {
+            foundNulls = true;
+            Configs.Scp914RoleChances = CreateDefaultUpgradeChances<Scp914RoleChance>();
+        }
+        else
+        {
+            Configs.Scp914RoleChances = AddDefaultUpgradeChances(Configs.Scp914RoleChances);
+        }
+        if (Configs.Scp914TeleportChances is null)
+        {
+            foundNulls = true;
+            Configs.Scp914TeleportChances = CreateDefaultUpgradeChances<Scp914TeleportChance>();
+        }
+        else
+        {
+            Configs.Scp914TeleportChances = AddDefaultUpgradeChances(Configs.Scp914TeleportChances);
+        }
+
+        if (foundNulls)
+        {
+            Log.Debug($"Some ChanceObjects lists in the config were null - they will be auto-initialized");
+        }
+
+        // TODO: Get rid of need for Unspecified/Unknown (zone vs room)
+
+        // Now debug the config if debug is enabled
+        if (Configs.Debug)
+        {
+            try
             {
-                for (int i = 0; i < kvp.Value.UsedSlots; i++)
+                Log.Debug($"StartingInventories: {Configs.StartingInventories.Count}");
+                foreach (KeyValuePair<RoleTypeId, StartingInventory> kvp in Configs.StartingInventories)
                 {
-                    foreach (StartingItem chance in kvp.Value[i])
+                    for (int i = 0; i < kvp.Value.UsedSlots; i++)
                     {
-                        Log.Debug($"Inventory Config: {kvp.Key} - Slot{i + 1}: {chance.ItemName} ({chance.Chance})");
+                        foreach (StartingItem chance in kvp.Value[i])
+                        {
+                            Log.Debug($"-- {kvp.Key}-Slot{i + 1}: ({chance.Chance}) {chance.ItemName}");
+                        }
+                    }
+
+                    foreach ((ItemType type, ushort amount, string group) in kvp.Value.Ammo)
+                    {
+                        Log.Debug($"-- {kvp.Key}-{type}: {amount} - group: {group}");
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                Log.Error($"StartingInventories exception: {e.Message}");
+            }
 
-                foreach ((ItemType type, ushort amount, string group) in kvp.Value.Ammo)
+            try
+            {
+                Log.Debug($"Scp914ItemChances: {Configs.Scp914ItemChances.Count}");
+                foreach (KeyValuePair<Scp914KnobSetting, List<Scp914ItemChance>> upgrade in Configs.Scp914ItemChances)
                 {
-                    Log.Debug($"Ammo Config: {kvp.Key} - {type} {amount} ({group})");
+                    foreach ((string oldItem, string newItem, double chance, int count) in upgrade.Value)
+                    {
+                        Log.Debug($"-- {upgrade.Key}: ({chance}) {oldItem} -> {newItem}x({count})");
+                    }
                 }
             }
-        }
-
-        if (Configs.Scp914ItemChances is not null)
-        {
-            Log.Debug($"{Configs.Scp914ItemChances.Count}");
-            foreach (KeyValuePair<Scp914KnobSetting, List<Scp914ItemChance>> upgrade in Configs.Scp914ItemChances)
+            catch (Exception e)
             {
-                foreach ((string oldItem, string newItem, double chance, int count) in upgrade.Value)
-                    Log.Debug($"914 Item Config: {upgrade.Key}: {oldItem} -> {newItem}x({count}) - {chance}");
+                Log.Error($"Scp914ItemChances exception: {e.Message}");
             }
-        }
 
-        if (Configs.Scp914RoleChances is not null)
-        {
-            Log.Debug($"{Configs.Scp914RoleChances.Count}");
-            foreach (KeyValuePair<Scp914KnobSetting, List<Scp914RoleChance>> upgrade in Configs.Scp914RoleChances)
+            try
             {
-                foreach ((string oldRole, string newRole, double chance, bool keepInventory, bool keepHealth) in upgrade.Value)
-                    Log.Debug($"914 Role Config: {upgrade.Key}: {oldRole} -> {newRole} - {chance} keepInventory: {keepInventory} keepHealth: {keepHealth}");
-            }
-        }
-
-        if (Configs.Scp914EffectChances is not null)
-        {
-            Log.Debug($"{Configs.Scp914EffectChances.Count}");
-            foreach (KeyValuePair<Scp914KnobSetting, List<Scp914EffectChance>> upgrade in Configs.Scp914EffectChances)
-            {
-                foreach ((EffectType effect, double chance, float duration) in upgrade.Value)
-                    Log.Debug($"914 Effect Config: {upgrade.Key}: {effect} + {duration} - {chance}");
-            }
-        }
-
-        if (Configs.Scp914TeleportChances is not null)
-        {
-            Log.Debug($"{Configs.Scp914TeleportChances.Count}");
-            foreach (KeyValuePair<Scp914KnobSetting, List<Scp914TeleportChance>> upgrade in Configs.Scp914TeleportChances)
-            {
-                foreach ((RoomType room, List<RoomType> ignoredRooms, Vector3 offset, double chance, float damage, ZoneType zone) in upgrade.Value)
+                Log.Debug($"Scp914EffectChances: {Configs.Scp914EffectChances.Count}");
+                foreach (KeyValuePair<Scp914KnobSetting, List<Scp914EffectChance>> upgrade in Configs.Scp914EffectChances)
                 {
-                    Log.Debug($"914 Teleport Config: {upgrade.Key}: {room}/{zone} + {offset} - {chance} [{damage}]");
-                    Log.Debug("Ignored rooms:");
-                    if (ignoredRooms is not null)
+                    foreach ((EffectType effect, double chance, float duration) in upgrade.Value)
                     {
-                        foreach (RoomType roomType in ignoredRooms)
+                        Log.Debug($"-- {upgrade.Key}: ({chance}) {effect} - duration: {duration}");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Scp914EffectChances exception: {e.Message}");
+            }
+
+            try
+            {
+                Log.Debug($"Scp914RoleChances: {Configs.Scp914RoleChances.Count}");
+                foreach (KeyValuePair<Scp914KnobSetting, List<Scp914RoleChance>> upgrade in Configs.Scp914RoleChances)
+                {
+                    foreach ((string oldRole, string newRole, double chance, bool keepInventory, bool keepHealth) in upgrade.Value)
+                    {
+                        Log.Debug($"-- {upgrade.Key}: ({chance}) {oldRole} -> {newRole} - keepInventory: {keepInventory} keepHealth: {keepHealth}");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Scp914RoleChances exception: {e.Message}");
+            }
+
+            try
+            {
+                if (Configs.Scp914TeleportChances is not null)
+                {
+                    Log.Debug($"Scp914TeleportChances: {Configs.Scp914TeleportChances.Count}");
+                    foreach (KeyValuePair<Scp914KnobSetting, List<Scp914TeleportChance>> upgrade in Configs.Scp914TeleportChances)
+                    {
+                        foreach ((RoomType room, List<RoomType> ignoredRooms, Vector3 offset, double chance, float damage, ZoneType zone) in upgrade.Value)
                         {
-                            Log.Debug(roomType);
+                            Log.Debug($"-- {upgrade.Key}: ({chance}) {room}/{zone} + {offset} - damage: {damage} ignored rooms: [{string.Join(", ", ignoredRooms.Select(x => x.ToString()))}]");
                         }
                     }
                 }
+                else
+                {
+                    Log.Warn($"Scp914TeleportChances is NULL");
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Scp914TeleportChances exception: {e.Message}");
             }
         }
+    }
+
+    private Dictionary<Scp914KnobSetting, List<T>> CreateDefaultUpgradeChances<T>()
+        where T : IChanceObjectD
+    {
+        return new Dictionary<Scp914KnobSetting, List<T>>()
+        {
+            { Scp914KnobSetting.Rough, new List<T>() },
+            { Scp914KnobSetting.Coarse, new List<T>() },
+            { Scp914KnobSetting.OneToOne, new List<T>() },
+            { Scp914KnobSetting.Fine, new List<T>() },
+            { Scp914KnobSetting.VeryFine, new List<T>() },
+        };
+    }
+
+    private Dictionary<Scp914KnobSetting, List<T>> AddDefaultUpgradeChances<T>(Dictionary<Scp914KnobSetting, List<T>> configValue)
+        where T : IChanceObjectD
+    {
+        foreach (var item in Scp914KnobSetting.Rough.GetAllValues())
+        {
+            Scp914KnobSetting setting = (Scp914KnobSetting)item;
+            if (configValue.TryGetValue(setting, out List<T> list) && list is not null)
+            {
+                foreach (var listItem in list)
+                {
+                    if (listItem is Scp914TeleportChance teleportChance)
+                    {
+                        teleportChance.IgnoredRooms = teleportChance.IgnoredRooms ??= new();
+                    }
+                }
+            }
+            else
+            {
+                configValue[setting] = new List<T>();
+            }
+        }
+        return configValue;
     }
 }
