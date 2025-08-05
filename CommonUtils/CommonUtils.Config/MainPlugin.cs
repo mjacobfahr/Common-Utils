@@ -17,6 +17,7 @@ using UnityEngine;
 using ItemEvents = Exiled.Events.Handlers.Item;
 using PlayerEvents = Exiled.Events.Handlers.Player;
 using Scp914Events = Exiled.Events.Handlers.Scp914;
+using Scp049Events = Exiled.Events.Handlers.Scp049;
 using ServerEvents = Exiled.Events.Handlers.Server;
 using WarheadEvents = Exiled.Events.Handlers.Warhead;
 using Random = System.Random;
