@@ -10,6 +10,7 @@ using Exiled.API.Features;
 using MEC;
 using PlayerRoles;
 using System;
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
@@ -59,6 +60,8 @@ public class MainPlugin : Plugin<Config>
 
     public MiscHandlers MiscHandlers { get; private set; } = new();
 
+    public AudioHandlers AudioHandlers { get; private set; } = new();
+
     public static List<CoroutineHandle> Coroutines { get; } = new();
 
     public static Dictionary<Player, Tuple<int, Vector3>> AfkDict { get; } = new();
@@ -71,6 +74,16 @@ public class MainPlugin : Plugin<Config>
             Log.EnableDebug();
         }
         ValidateConfig();
+
+        if (Configs.AudioEffects.Enabled)
+        {
+            // Load audio files
+            Log.Info($"Loading audio clips from directory: {Configs.AudioEffects.AudioPath}");
+            Configs.AudioEffects.DoctorResurrectAudio = AudioHelper.SafeLoadAudioClips(Configs.AudioEffects.AudioPath, Configs.AudioEffects.DoctorResurrectAudio, log: true);
+            Configs.AudioEffects.DoctorCallAudio = AudioHelper.SafeLoadAudioClips(Configs.AudioEffects.AudioPath, Configs.AudioEffects.DoctorCallAudio, log: true);
+            Configs.AudioEffects.DoctorKillAudio = AudioHelper.SafeLoadAudioClips(Configs.AudioEffects.AudioPath, Configs.AudioEffects.DoctorKillAudio, log: true);
+            Configs.AudioEffects.ZombieKillAudio = AudioHelper.SafeLoadAudioClips(Configs.AudioEffects.AudioPath, Configs.AudioEffects.ZombieKillAudio, log: true);
+        }
 
         Log.Debug("Registering EventHandlers..");
         PlayerEvents.Hurting += PlayerHandlers.OnPlayerHurting;
@@ -120,8 +133,14 @@ public class MainPlugin : Plugin<Config>
             Scp914Events.UpgradingInventoryItem += MapHandlers.OnUpgradingInventoryItem;
         }
 
-        // Misc events
         Scp914Events.Activating += MiscHandlers.OnActivating;
+
+        if (Configs.AudioEffects.Enabled)
+        {
+            Scp049Events.FinishingRecall += AudioHandlers.OnDoctorFinishingRecall;
+            Scp049Events.SendingCall += AudioHandlers.OnDoctorSendingCall;
+            PlayerEvents.Died += AudioHandlers.OnDied;
+        }
 
         Log.Debug("Registered EventHandlers");
 
@@ -159,13 +178,18 @@ public class MainPlugin : Plugin<Config>
         Scp914Events.UpgradingPickup -= MapHandlers.OnUpgradingPickup;
         Scp914Events.UpgradingInventoryItem -= MapHandlers.OnUpgradingInventoryItem;
 
-        // Misc events
         Scp914Events.Activating -= MiscHandlers.OnActivating;
+
+        Scp049Events.FinishingRecall -= AudioHandlers.OnDoctorFinishingRecall;
+        Scp049Events.SendingCall -= AudioHandlers.OnDoctorSendingCall;
+        PlayerEvents.Died -= AudioHandlers.OnDied;
 
         ItemHandlers = null;
         PlayerHandlers = null;
         ServerHandlers = null;
         MapHandlers = null;
+        MiscHandlers = null;
+        AudioHandlers = null;
         Singleton = null;
         base.OnDisabled();
     }
@@ -173,6 +197,20 @@ public class MainPlugin : Plugin<Config>
     private void ValidateConfig()
     {
         // First validate and make sure config objects (that did not get default) are not null
+        if (Configs.AudioEffects is null)
+        {
+            Configs.AudioEffects = new AudioEffects()
+            {
+                Enabled = false,
+            };
+        }
+        if (!Directory.Exists(Configs.AudioEffects.AudioPath))
+        {
+            Configs.AudioEffects.Enabled = false;
+            Log.Warn($"Disabling AudioEffects: AudioPath directory does not exist: {Configs.AudioEffects.AudioPath}");
+        }
+
+        // Check all chance objects and do one log if any are found
         bool foundNulls = false;
         if (Configs.StartingInventories is null)
         {

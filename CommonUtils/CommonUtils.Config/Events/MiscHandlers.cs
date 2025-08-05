@@ -2,21 +2,18 @@
 using Exiled.API.Features;
 using Exiled.Events.EventArgs.Scp914;
 using MEC;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using ExiledScp914 = Exiled.API.Features.Scp914;    // Scp914 conflicts with Scp914 from Assembly-CSharp
 
 namespace CommonUtils.Config.Events;
 
+// These could be sorted elsewhere but they are all custom handlers added by me as opposed to the original version
 public class MiscHandlers
 {
     private Config Configs => MainPlugin.Singleton.Config;
 
     private CoroutineHandle DiscoHandle { get; set; }
-
-    
 
     public void OnActivating(ActivatingEventArgs ev)
     {

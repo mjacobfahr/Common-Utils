@@ -28,6 +28,9 @@ public class Config : IConfig
     [Description("Configure Disco Lights event that triggers when activating SCP-914.")]
     public Scp914Disco Scp914Disco { get; set; } = new();
 
+    [Description("Configure audio sound-effects that trigger on certain events or otherwise.")]
+    public AudioEffects AudioEffects { get; set; } = new();
+
     [Description("Whether or not probabilities should be additive (50 + 50 = 100) or not (50 + 50 = 2 seperate 50% chances)")]
     public bool AdditiveProbabilities { get; set; } = false;
 
