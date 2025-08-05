@@ -57,6 +57,8 @@ public class MainPlugin : Plugin<Config>
 
     public MapHandlers MapHandlers { get; private set; } = new();
 
+    public MiscHandlers MiscHandlers { get; private set; } = new();
+
     public static List<CoroutineHandle> Coroutines { get; } = new();
 
     public static Dictionary<Player, Tuple<int, Vector3>> AfkDict { get; } = new();
@@ -105,11 +107,9 @@ public class MainPlugin : Plugin<Config>
         ServerEvents.RoundStarted += ServerHandlers.OnRoundStarted;
         ServerEvents.RestartingRound += ServerHandlers.OnRestartingRound;
         ServerEvents.WaitingForPlayers += ServerHandlers.OnWaitingForPlayers;
-
         WarheadEvents.Starting += ServerHandlers.OnWarheadStarting;
         WarheadEvents.Stopping += ServerHandlers.OnWarheadStopping;
 
-        Scp914Events.Activating += MapHandlers.OnActivating;
         Scp914Events.UpgradingPlayer += MapHandlers.OnUpgradingPlayer;
         if (Configs.Scp914ItemChances is not null)
         {
@@ -119,6 +119,9 @@ public class MainPlugin : Plugin<Config>
         {
             Scp914Events.UpgradingInventoryItem += MapHandlers.OnUpgradingInventoryItem;
         }
+
+        // Misc events
+        Scp914Events.Activating += MiscHandlers.OnActivating;
 
         Log.Debug("Registered EventHandlers");
 
@@ -149,14 +152,15 @@ public class MainPlugin : Plugin<Config>
         ServerEvents.RoundStarted -= ServerHandlers.OnRoundStarted;
         ServerEvents.RestartingRound -= ServerHandlers.OnRestartingRound;
         ServerEvents.WaitingForPlayers -= ServerHandlers.OnWaitingForPlayers;
-
         WarheadEvents.Starting -= ServerHandlers.OnWarheadStarting;
         WarheadEvents.Stopping -= ServerHandlers.OnWarheadStopping;
 
         Scp914Events.UpgradingPlayer -= MapHandlers.OnUpgradingPlayer;
         Scp914Events.UpgradingPickup -= MapHandlers.OnUpgradingPickup;
         Scp914Events.UpgradingInventoryItem -= MapHandlers.OnUpgradingInventoryItem;
-        Scp914Events.Activating -= MapHandlers.OnActivating;
+
+        // Misc events
+        Scp914Events.Activating -= MiscHandlers.OnActivating;
 
         ItemHandlers = null;
         PlayerHandlers = null;
