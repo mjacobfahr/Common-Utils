@@ -17,7 +17,7 @@ using ExiledScp914 = Exiled.API.Features.Scp914;    // Scp914 conflicts with Scp
 
 namespace CommonUtils.Config.Events;
 
-public class MapHandlers
+public class UpgradeHandlers
 {
     private Config Configs => MainPlugin.Singleton.Config;
 

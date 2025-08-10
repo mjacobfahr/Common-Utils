@@ -24,8 +24,6 @@ using Random = System.Random;
 
 namespace CommonUtils.Config;
 
-// TODO: There is an excessive amount of null checks throughout the codebase.
-//       The project has nullable disabled and most properties are default-constructed so this should not be necessary.
 // TODO: The IChanceObject roll logic is duplicated all throughout the codebase, abstract it to a utility method.
 //       - Make a routine in Core that handles the additiveProb logic of reducing roll each time, pass a OnSelected handler to the method
 //       - To help, IChanceObject should also require a Debug() method that logs its properties
@@ -57,7 +55,7 @@ public class MainPlugin : Plugin<Config>
 
     public ServerHandlers ServerHandlers { get; private set; } = new();
 
-    public MapHandlers MapHandlers { get; private set; } = new();
+    public UpgradeHandlers UpgradeHandlers { get; private set; } = new();
 
     public MiscHandlers MiscHandlers { get; private set; } = new();
 
@@ -124,14 +122,14 @@ public class MainPlugin : Plugin<Config>
         WarheadEvents.Starting += ServerHandlers.OnWarheadStarting;
         WarheadEvents.Stopping += ServerHandlers.OnWarheadStopping;
 
-        Scp914Events.UpgradingPlayer += MapHandlers.OnUpgradingPlayer;
+        Scp914Events.UpgradingPlayer += UpgradeHandlers.OnUpgradingPlayer;
         if (Configs.Scp914ItemChances is not null)
         {
-            Scp914Events.UpgradingPickup += MapHandlers.OnUpgradingPickup;
+            Scp914Events.UpgradingPickup += UpgradeHandlers.OnUpgradingPickup;
         }
         if (Configs.Scp914ItemChances is not null)
         {
-            Scp914Events.UpgradingInventoryItem += MapHandlers.OnUpgradingInventoryItem;
+            Scp914Events.UpgradingInventoryItem += UpgradeHandlers.OnUpgradingInventoryItem;
         }
 
         Scp914Events.Activating += MiscHandlers.OnActivating;
@@ -175,9 +173,9 @@ public class MainPlugin : Plugin<Config>
         WarheadEvents.Starting -= ServerHandlers.OnWarheadStarting;
         WarheadEvents.Stopping -= ServerHandlers.OnWarheadStopping;
 
-        Scp914Events.UpgradingPlayer -= MapHandlers.OnUpgradingPlayer;
-        Scp914Events.UpgradingPickup -= MapHandlers.OnUpgradingPickup;
-        Scp914Events.UpgradingInventoryItem -= MapHandlers.OnUpgradingInventoryItem;
+        Scp914Events.UpgradingPlayer -= UpgradeHandlers.OnUpgradingPlayer;
+        Scp914Events.UpgradingPickup -= UpgradeHandlers.OnUpgradingPickup;
+        Scp914Events.UpgradingInventoryItem -= UpgradeHandlers.OnUpgradingInventoryItem;
 
         Scp914Events.Activating -= MiscHandlers.OnActivating;
 
@@ -188,7 +186,7 @@ public class MainPlugin : Plugin<Config>
         ItemHandlers = null;
         PlayerHandlers = null;
         ServerHandlers = null;
-        MapHandlers = null;
+        UpgradeHandlers = null;
         MiscHandlers = null;
         AudioHandlers = null;
         Singleton = null;
