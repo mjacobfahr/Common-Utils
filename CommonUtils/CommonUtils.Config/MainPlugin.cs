@@ -80,10 +80,10 @@ public class MainPlugin : Plugin<Config>
         {
             // Load audio files
             Log.Info($"Loading audio clips from directory: {Configs.AudioEffects.AudioPath}");
-            Configs.AudioEffects.DoctorResurrectAudio = AudioHelper.SafeLoadAudioClips(Configs.AudioEffects.AudioPath, Configs.AudioEffects.DoctorResurrectAudio, log: true);
-            Configs.AudioEffects.DoctorCallAudio = AudioHelper.SafeLoadAudioClips(Configs.AudioEffects.AudioPath, Configs.AudioEffects.DoctorCallAudio, log: true);
-            Configs.AudioEffects.DoctorKillAudio = AudioHelper.SafeLoadAudioClips(Configs.AudioEffects.AudioPath, Configs.AudioEffects.DoctorKillAudio, log: true);
-            Configs.AudioEffects.ZombieKillAudio = AudioHelper.SafeLoadAudioClips(Configs.AudioEffects.AudioPath, Configs.AudioEffects.ZombieKillAudio, log: true);
+            Configs.AudioEffects.DoctorResurrectAudio = AudioHelper.LoadAudioClips(Configs.AudioEffects.AudioPath, Configs.AudioEffects.DoctorResurrectAudio, returnSuccesses: true, log: true);
+            Configs.AudioEffects.DoctorCallAudio = AudioHelper.LoadAudioClips(Configs.AudioEffects.AudioPath, Configs.AudioEffects.DoctorCallAudio, returnSuccesses: true, log: true);
+            Configs.AudioEffects.DoctorKillAudio = AudioHelper.LoadAudioClips(Configs.AudioEffects.AudioPath, Configs.AudioEffects.DoctorKillAudio, returnSuccesses: true, log: true);
+            Configs.AudioEffects.ZombieKillAudio = AudioHelper.LoadAudioClips(Configs.AudioEffects.AudioPath, Configs.AudioEffects.ZombieKillAudio, returnSuccesses: true, log: true);
         }
 
         Log.Debug("Registering EventHandlers..");

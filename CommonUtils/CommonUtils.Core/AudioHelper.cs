@@ -13,13 +13,13 @@ public static class AudioHelper
 {
     /// <summary>
     /// Loads all clips (by filename) in `audioFiles` from directory path `audioDir`.
-    /// Any files that failed to load are removed from the returned list.
     /// </summary>
     /// <param name="audioDir"><inheritdoc cref="LoadAudioClip(string, string, bool, Assembly)" path="/param[@name='audioDir']"/></param>
     /// <param name="audioFiles">A list of all audio filenames that should be loaded from the directory.</param>
+    /// <param name="returnSuccesses">If true, removes failed clips from the input list and returns that. Otherwise, by default it just returns failed clips.</param>
     /// <param name="log"><inheritdoc cref="LoadAudioClip(string, string, bool, Assembly)" path="/param[@name='log']"/></param>
     /// <returns>A list of all files that failed to load.</returns>
-    public static List<string> SafeLoadAudioClips(string audioDir, List<string> audioFiles, bool log = false)
+    public static List<string> LoadAudioClips(string audioDir, List<string> audioFiles, bool returnSuccesses = false, bool log = false)
     {
         Assembly callingAssembly = Assembly.GetCallingAssembly();
         List<string> failedClips = new();
@@ -30,29 +30,15 @@ public static class AudioHelper
                 failedClips.Add(file);
             }
         }
-        audioFiles.RemoveAll(item => failedClips.Contains(item));
-        return audioFiles;
-    }
-
-    /// <summary>
-    /// Loads all clips (by filename) in `audioFiles` from directory path `audioDir`.
-    /// </summary>
-    /// <param name="audioDir"><inheritdoc cref="LoadAudioClip(string, string, bool, Assembly)" path="/param[@name='audioDir']"/></param>
-    /// <param name="audioFiles">A list of all audio filenames that should be loaded from the directory.</param>
-    /// <param name="log"><inheritdoc cref="LoadAudioClip(string, string, bool, Assembly)" path="/param[@name='log']"/></param>
-    /// <returns>A list of all files that failed to load.</returns>
-    public static List<string> LoadAudioClips(string audioDir, List<string> audioFiles, bool log = false)
-    {
-        Assembly callingAssembly = Assembly.GetCallingAssembly();
-        List<string> failedClips = new();
-        foreach (string file in audioFiles)
+        if (returnSuccesses)
         {
-            if (!LoadAudioClip(audioDir, file, log, assembly: callingAssembly))
-            {
-                failedClips.Add(file);
-            }
+            audioFiles.RemoveAll(item => failedClips.Contains(item));
+            return audioFiles;
         }
-        return failedClips;
+        else
+        {
+            return failedClips;
+        }
     }
 
     /// <summary>
@@ -66,15 +52,14 @@ public static class AudioHelper
     public static bool LoadAudioClip(string audioDir, string audioFile, bool log = false, Assembly assembly = null)
     {
         Assembly callingAssembly = assembly ?? Assembly.GetCallingAssembly();
-        if (!audioFile.EndsWith(".ogg"))
+        if (string.IsNullOrEmpty(Path.GetExtension(audioFile)))
         {
             audioFile += ".ogg";
         }
         Log.Debug($"-- loading audio clip: {audioFile}", print: log, assembly: callingAssembly);
 
         string filepath = Path.Combine(audioDir, audioFile);
-        string name = audioFile.Replace(".ogg", "");
-        return AudioClipStorage.LoadClip(filepath, name);
+        return AudioClipStorage.LoadClip(filepath); // name will automatically be set to filename without extension
     }
 
     public static AudioPlayer QuickPlayClip(string audioPlayerName, string clipName, GameObject parent = null, float speakerVolume = 1.0f, int speakerCount = 1, float minDistance = 5.0f, float maxDistance = 5.0f, bool log = false)
