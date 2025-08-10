@@ -16,6 +16,9 @@ public class Config : IConfig
     [Description("Whether debug logs should be written to the console.")]
     public bool Debug { get; set; } = false;
 
+    [Description("Whether debug logs relating to chance rolling should be written to the console.")]
+    public bool RollDebug { get; set; } = false;
+
     [Description("Configure settings related to server maintenance/administration here.")]
     public ServerSettings ServerSettings { get; set; } = new();
 
@@ -85,21 +88,6 @@ public class Config : IConfig
     [Description("Determines if SCP-914 effects are exclusive, meaning only one can be applied each time a player is upgraded.")]
     public bool Scp914EffectsExclusivity { get; set; } = false;
 
-    [Description("A dictionary of random effects to apply to players when going through SCP-914 on certain settings.")]
-    public Dictionary<Scp914KnobSetting, List<Scp914EffectChance>> Scp914EffectChances { get; set; } = new()
-    {
-        {
-            Scp914KnobSetting.Rough, new List<Scp914EffectChance>
-            {
-                new()
-                {
-                    Effect = EffectType.Bleeding,
-                    Chance = 100,
-                },
-            }
-        },
-    };
-
     [Description("The list of custom SCP-914 item upgrade recipes. 'original' is the ItemType being upgraded, " +
         "'new' is the ItemType to upgrade to, and 'chance' is the percent chance of the upgrade happening. " +
         "You can specify multiple upgrade choices for the same item. For custom items use the item's name.")]
@@ -113,6 +101,21 @@ public class Config : IConfig
                     Original = ItemType.KeycardO5.ToString(),
                     New = ItemType.MicroHID.ToString(),
                     Chance = 50,
+                },
+            }
+        },
+    };
+
+    [Description("A dictionary of random effects to apply to players when going through SCP-914 on certain settings.")]
+    public Dictionary<Scp914KnobSetting, List<Scp914EffectChance>> Scp914EffectChances { get; set; } = new()
+    {
+        {
+            Scp914KnobSetting.Rough, new List<Scp914EffectChance>
+            {
+                new()
+                {
+                    Effect = EffectType.Bleeding,
+                    Chance = 100,
                 },
             }
         },

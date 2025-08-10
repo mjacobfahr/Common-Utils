@@ -211,60 +211,19 @@ public class MainPlugin : Plugin<Config>
             Log.Warn($"Disabling AudioEffects: AudioPath directory does not exist: {Configs.AudioEffects.AudioPath}");
         }
 
-        // Check all chance objects and do one log if any are found
-        bool foundNulls = false;
+        // Check all chance objects and auto-initialize empty collections for any null objects
         if (Configs.StartingInventories is null)
         {
-            foundNulls = true;
             Configs.StartingInventories = new();
-            // TODO: Add a default entry for each RoleTypeId - ideally if its null we just use the default config value
         }
-
-        if (Configs.Scp914ItemChances is null)
-        {
-            foundNulls = true;
-            Configs.Scp914ItemChances = CreateDefaultUpgradeChances<Scp914ItemChance>();
-        }
-        else
-        {
-            Configs.Scp914ItemChances = AddDefaultUpgradeChances(Configs.Scp914ItemChances);
-        }
-        if (Configs.Scp914EffectChances is null)
-        {
-            foundNulls = true;
-            Configs.Scp914EffectChances = CreateDefaultUpgradeChances<Scp914EffectChance>();
-        }
-        else
-        {
-            Configs.Scp914EffectChances = AddDefaultUpgradeChances(Configs.Scp914EffectChances);
-        }
-        if (Configs.Scp914RoleChances is null)
-        {
-            foundNulls = true;
-            Configs.Scp914RoleChances = CreateDefaultUpgradeChances<Scp914RoleChance>();
-        }
-        else
-        {
-            Configs.Scp914RoleChances = AddDefaultUpgradeChances(Configs.Scp914RoleChances);
-        }
-        if (Configs.Scp914TeleportChances is null)
-        {
-            foundNulls = true;
-            Configs.Scp914TeleportChances = CreateDefaultUpgradeChances<Scp914TeleportChance>();
-        }
-        else
-        {
-            Configs.Scp914TeleportChances = AddDefaultUpgradeChances(Configs.Scp914TeleportChances);
-        }
-
-        if (foundNulls)
-        {
-            Log.Debug($"Some ChanceObjects lists in the config were null - they will be auto-initialized");
-        }
+        Configs.Scp914ItemChances = CreateOrAddDefaultUpgradeChances(Configs.Scp914ItemChances);
+        Configs.Scp914EffectChances = CreateOrAddDefaultUpgradeChances(Configs.Scp914EffectChances);
+        Configs.Scp914RoleChances = CreateOrAddDefaultUpgradeChances(Configs.Scp914RoleChances);
+        Configs.Scp914TeleportChances = CreateOrAddDefaultUpgradeChances(Configs.Scp914TeleportChances);
 
         // TODO: Get rid of need for Unspecified/Unknown (zone vs room)
 
-        // Now debug the config if debug is enabled
+        // Now log config info if debug is enabled
         if (Configs.Debug)
         {
             try
@@ -364,40 +323,44 @@ public class MainPlugin : Plugin<Config>
         }
     }
 
-    private Dictionary<Scp914KnobSetting, List<T>> CreateDefaultUpgradeChances<T>()
+    private Dictionary<Scp914KnobSetting, List<T>> CreateOrAddDefaultUpgradeChances<T>(Dictionary<Scp914KnobSetting, List<T>> configValue)
         where T : IChanceObjectD
     {
-        return new Dictionary<Scp914KnobSetting, List<T>>()
+        if (configValue is null)
         {
-            { Scp914KnobSetting.Rough, new List<T>() },
-            { Scp914KnobSetting.Coarse, new List<T>() },
-            { Scp914KnobSetting.OneToOne, new List<T>() },
-            { Scp914KnobSetting.Fine, new List<T>() },
-            { Scp914KnobSetting.VeryFine, new List<T>() },
-        };
-    }
-
-    private Dictionary<Scp914KnobSetting, List<T>> AddDefaultUpgradeChances<T>(Dictionary<Scp914KnobSetting, List<T>> configValue)
-        where T : IChanceObjectD
-    {
-        foreach (var item in Scp914KnobSetting.Rough.GetAllValues())
-        {
-            Scp914KnobSetting setting = (Scp914KnobSetting)item;
-            if (configValue.TryGetValue(setting, out List<T> list) && list is not null)
+            // Create empty lists for each setting
+            return new Dictionary<Scp914KnobSetting, List<T>>()
             {
-                foreach (var listItem in list)
+                { Scp914KnobSetting.Rough, new List<T>() },
+                { Scp914KnobSetting.Coarse, new List<T>() },
+                { Scp914KnobSetting.OneToOne, new List<T>() },
+                { Scp914KnobSetting.Fine, new List<T>() },
+                { Scp914KnobSetting.VeryFine, new List<T>() },
+            };
+        }
+        else
+        {
+            // Add empty lists for any missing settings
+            foreach (var item in Scp914KnobSetting.Rough.GetAllValues())
+            {
+                Scp914KnobSetting setting = (Scp914KnobSetting)item;
+                if (configValue.TryGetValue(setting, out List<T> list) && list is not null)
                 {
-                    if (listItem is Scp914TeleportChance teleportChance)
+                    // Initialize any nested collections which could be null and cause issues
+                    foreach (var listItem in list)
                     {
-                        teleportChance.IgnoredRooms = teleportChance.IgnoredRooms ??= new();
+                        if (listItem is Scp914TeleportChance teleportChance)
+                        {
+                            teleportChance.IgnoredRooms = teleportChance.IgnoredRooms ??= new();
+                        }
                     }
                 }
+                else
+                {
+                    configValue[setting] = new List<T>();
+                }
             }
-            else
-            {
-                configValue[setting] = new List<T>();
-            }
+            return configValue;
         }
-        return configValue;
     }
 }

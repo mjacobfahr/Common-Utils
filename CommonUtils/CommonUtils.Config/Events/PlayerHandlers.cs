@@ -160,33 +160,30 @@ public class PlayerHandlers
 
     public List<ItemType> GetStartingInventory(RoleTypeId role, Player player = null)
     {
+        // Iterate through slots
         List<ItemType> items = new();
-
-        Log.Debug($"{nameof(GetStartingInventory)} Iterating through slots...");
-        // iterate through slots
+        Log.Debug($"{nameof(GetStartingInventory)}: Iterating through slots of role: {role} ...");
         for (int i = 0; i < StartingInventories[role].UsedSlots; i++)
         {
-            Log.Debug($"\n{nameof(GetStartingInventory)} Iterating slot {i + 1}");
-            Log.Debug($"{nameof(GetStartingInventory)} Checking groups...");
-
-            // item chances for that slot
-            List<StartingItem> itemChances = StartingInventories[role][i]
+            // Item chances for the current slot that match player group (if specified)
+            List<StartingItem> chances = StartingInventories[role][i]
                 .Where(x =>
                     player == null
-                    || string.IsNullOrEmpty(x.Group)
-                    || x.Group == "none"
-                    || x.Group == player.Group.Name)
+                    || (string.IsNullOrEmpty(x.Group) || x.Group == "none" || x.Group == player.Group.Name))
                 .ToList();
+            Log.Debug($"{nameof(GetStartingInventory)}: Found {chances.Count} matching {nameof(StartingItem)} config entries for slot {i + 1}.");
 
-            Log.Debug($"{nameof(GetStartingInventory)} Finished checking groups, found {itemChances.Count} valid itemChances.");
-
-            double rolledChance = ChanceHelper.RollChance(itemChances, MainPlugin.Configs.AdditiveProbabilities);
-            foreach ((string item, double chance) in itemChances)
+            double rolledChance = ChanceHelper.RollChance(chances, MainPlugin.Configs.AdditiveProbabilities);
+            foreach ((string item, double chance) in chances)
             {
-                Log.Debug($"{nameof(GetStartingInventory)} Trying to assign to slot {i + 1} for {role}; item: {item}; {rolledChance} <= {chance} ({rolledChance <= chance}).");
+                if (MainPlugin.Configs.RollDebug)
+                {
+                    Log.Debug($"{nameof(GetStartingInventory)}: Trying to select item for slot {i + 1}; item: {item}; {rolledChance} <= {chance} ({rolledChance <= chance}).");
+                }
 
                 if (rolledChance <= chance)
                 {
+                    Log.Debug($"{nameof(GetStartingInventory)}: Randomly selected item {item} for slot {i + 1} of role {role}.");
                     if (Enum.TryParse(item, true, out ItemType type))
                     {
                         items.Add(type);
@@ -201,22 +198,19 @@ public class PlayerHandlers
                         }
                         else
                         {
-                            Log.Warn($"{nameof(GetStartingInventory)} Tried to give {customItem!.Name} to a null player.");
+                            Log.Warn($"{nameof(GetStartingInventory)}: Tried to give {customItem!.Name} to a null player.");
                         }
                         break;
                     }
 
-                    Log.Warn($"{nameof(GetStartingInventory)} Skipping {item} as it is not a valid ItemType or CustomItem!");
+                    Log.Warn($"{nameof(GetStartingInventory)}: Skipping {item} as it is not a valid ItemType or CustomItem!");
                 }
-
                 if (MainPlugin.Configs.AdditiveProbabilities)
                 {
                     rolledChance -= chance;
                 }
             }
         }
-
-        Log.Debug($"{nameof(GetStartingInventory)} Finished iterating slots.");
         return items;
     }
 
