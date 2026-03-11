@@ -30,15 +30,13 @@ public static class AudioHelper
                 failedClips.Add(file);
             }
         }
+
         if (returnSuccesses)
         {
             audioFiles.RemoveAll(item => failedClips.Contains(item));
             return audioFiles;
         }
-        else
-        {
-            return failedClips;
-        }
+        return failedClips;
     }
 
     /// <summary>
@@ -56,8 +54,8 @@ public static class AudioHelper
         {
             audioFile += ".ogg";
         }
-        Log.Debug($"-- loading audio clip: {audioFile}", print: log, assembly: callingAssembly);
 
+        Log.Debug($"-- loading audio clip: {audioFile}", print: log, assembly: callingAssembly);
         string filepath = Path.Combine(audioDir, audioFile);
         return AudioClipStorage.LoadClip(filepath); // name will automatically be set to filename without extension
     }
